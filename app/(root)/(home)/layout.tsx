@@ -1,4 +1,6 @@
+import { ThemeProvider } from "next-themes";
 import Header from "./header";
+import Menu from "./menu";
 
 export default function HomeLayout({
   children,
@@ -6,9 +8,10 @@ export default function HomeLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Header />
-      {children}
-    </div>
+      {children}  
+      <Menu />
+    </ThemeProvider>
   );
 }
