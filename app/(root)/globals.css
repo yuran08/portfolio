@@ -120,3 +120,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 主题切换扩散动画 */
+@keyframes reveal-circle {
+  from {
+    clip-path: circle(var(--clip-radius-start, 0px) at var(--clip-x, 50%) var(--clip-y, 50%));
+  }
+  to {
+    clip-path: circle(var(--clip-radius-end, 100%) at var(--clip-x, 50%) var(--clip-y, 50%));
+  }
+}
+
+::view-transition-old(root) {
+  animation: none; /* 旧视图不参与特殊动画，或可以设置为快速淡出 */
+  z-index: 1; /* 确保旧视图在下方 */
+}
+
+::view-transition-new(root) {
+  animation: reveal-circle 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  z-index: 9999; /* 新视图在最上方 */
+  mix-blend-mode: normal; /* 避免混合模式干扰 clip-path */
+}
