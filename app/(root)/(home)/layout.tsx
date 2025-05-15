@@ -10,7 +10,7 @@ export default function HomeLayout({
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Header />
-      {children}  
+      {children}
       <Menu />
     </ThemeProvider>
   );

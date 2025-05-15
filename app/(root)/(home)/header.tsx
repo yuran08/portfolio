@@ -10,9 +10,7 @@ export default function Header() {
   return (
     <header className="flex items-start justify-between p-4">
       <ViewTransition name={currentPage}>
-        <h1
-          className="text-6xl font-bold tracking-tight uppercase"
-        >
+        <h1 className="text-6xl font-bold tracking-tight uppercase">
           {currentPage}
         </h1>
       </ViewTransition>
