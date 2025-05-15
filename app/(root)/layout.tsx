@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Yu Ran",
+  title: "𝓎𝓊 𝓇𝒶𝓃",
   description: "Personal Website of Yu Ran",
 };
 
