@@ -1,23 +1,35 @@
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
+import React, { unstable_ViewTransition as ViewTransition } from "react";
+import { links } from "./config";
+import { useSelectPage } from "./use-select-page";
 
 export default function Menu() {
   return (
     <nav className="fixed bottom-8 right-8 text-center flex flex-col gap-2">
       {
-        [
-          { href: "/", label: "Home" },
-          { href: "/app", label: "App" },
-        ].map(({ href, label }) => (
-          <MenuLink key={href} href={href}>{label}</MenuLink>
+        links.map((link) => (
+          <MenuLink key={link.href} link={link} />
         ))
       }
     </nav>
   );
 }
 
-const MenuLink = ({ href, children }: { href: string; children: React.ReactNode }) => {
+const MenuLink = ({ link }: { link: { href: string; label: string } }) => {
+  const currentPage = useSelectPage();
+
+  if (currentPage === link.label) return null;
+
   return (
-    <Link className="block font-bold text-xl" href={href}>{children}</Link>
+    <ViewTransition name={link.label}>
+      <Link
+        className="block font-bold text-xl uppercase"
+        href={link.href}
+      >
+        {link.label}
+      </Link>
+    </ViewTransition>
   );
 };
