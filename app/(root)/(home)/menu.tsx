@@ -7,7 +7,7 @@ import { useSelectPage } from "./use-select-page";
 
 export default function Menu() {
   return (
-    <nav className="fixed bottom-8 right-8 text-center flex flex-col gap-2">
+    <nav className="fixed right-8 bottom-8 flex flex-col gap-2 text-center">
       {links.map((link) => (
         <MenuLink key={link.href} link={link} />
       ))}
@@ -22,7 +22,7 @@ const MenuLink = ({ link }: { link: { href: string; label: string } }) => {
 
   return (
     <ViewTransition name={link.label}>
-      <Link className="block font-bold text-xl uppercase" href={link.href}>
+      <Link className="block text-xl font-bold uppercase" href={link.href}>
         {link.label}
       </Link>
     </ViewTransition>

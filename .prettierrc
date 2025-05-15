@@ -10,7 +10,9 @@
   "bracketSameLine": false,
   "arrowParens": "always",
   "endOfLine": "lf",
-  "plugins": [],
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindStylesheet": "./app/(root)/globals.css",
+  "tailwindFunctions": ["clsx"],
   "overrides": [
     {
       "files": "*.{js,jsx,ts,tsx}",
