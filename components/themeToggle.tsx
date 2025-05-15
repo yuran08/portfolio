@@ -58,18 +58,20 @@ export default function ThemeToggle() {
   };
 
   return (
-    <button
-      onClick={handleThemeChange}
-      className="h-10 w-10 cursor-pointer rounded-full bg-gray-200 p-2 hover:bg-gray-300 dark:bg-gray-800 hover:dark:bg-gray-700"
-      aria-label={
-        resolvedTheme === "dark" ? "切换到亮色模式" : "切换到暗色模式"
-      }
-    >
-      {resolvedTheme === "dark" ? (
-        <Sun className="h-6 w-6" />
-      ) : (
-        <Moon className="h-6 w-6" />
-      )}
-    </button>
+    <header className="absolute top-4 right-4 z-10">
+      <button
+        onClick={handleThemeChange}
+        className="h-10 w-10 cursor-pointer rounded-full bg-gray-200 p-2 hover:bg-gray-300 dark:bg-gray-800 hover:dark:bg-gray-700"
+        aria-label={
+          resolvedTheme === "dark" ? "切换到亮色模式" : "切换到暗色模式"
+        }
+      >
+        {resolvedTheme === "dark" ? (
+          <Sun className="h-6 w-6" />
+        ) : (
+          <Moon className="h-6 w-6" />
+        )}
+      </button>
+    </header>
   );
 }
