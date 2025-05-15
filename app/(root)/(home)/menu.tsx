@@ -22,8 +22,19 @@ const MenuLink = ({ link }: { link: { href: string; label: string } }) => {
 
   return (
     <ViewTransition name={link.label}>
-      <Link className="block text-xl font-bold uppercase" href={link.href}>
-        {link.label}
+      <Link
+        href={link.href}
+        className="group relative block overflow-hidden px-2 py-1 text-xl font-bold uppercase focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {/* Animated rectangle for hover effect */}
+        <span
+          className="absolute top-0 left-0 h-full w-full origin-left scale-x-0 transform bg-primary transition-transform duration-300 ease-in-out group-hover:scale-x-100"
+          aria-hidden="true"
+        />
+        {/* Link text - ensure it's above the rectangle and changes color on hover */}
+        <span className="relative z-10 transition-colors duration-300 ease-in-out group-hover:text-primary-foreground">
+          {link.label}
+        </span>
       </Link>
     </ViewTransition>
   );
