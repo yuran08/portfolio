@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { Message } from "./type";
 import { getMessageFromFormData, getLLMResponseReactNode } from "./action";
 import ChatInput from "./chat-input";
@@ -14,12 +14,12 @@ import ChatInput from "./chat-input";
 // }
 export default function Chat() {
   const [messages, setMessagges] = useState<Message[]>([]);
-  const [messagesNode, setMessagesNode] = useState<React.ReactNode[]>([]);
+  const [messagesNode, setMessagesNode] = useState<ReactNode[]>([]);
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center overflow-hidden p-6">
       <div className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {messages.length > 0 && messagesNode.map((node) => node)}
+        {messages.length > 0 ? messagesNode : null}
       </div>
       <ChatInput
         action={async (formData: FormData) => {

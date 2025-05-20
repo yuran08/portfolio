@@ -9,7 +9,7 @@ import {
 } from "./message";
 import { Suspense } from "react";
 import { Message } from "./type";
-
+import ParseLLMReaderToMarkdownGenerator from "./parser";
 // 生成随机ID
 const generateId = () => (Math.random() * 10000000).toFixed(0);
 
@@ -41,22 +41,45 @@ export const getMessageFromFormData = async (formData: FormData) => {
 // 生成LLM响应的React节点
 export const getLLMResponseReactNode = async (messages: Message[]) => {
   const llmReader = (await getLLMResponseStream(messages)).getReader();
+  const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
   const messageId = generateId();
 
-  // 创建流式响应组件
-  const StreamingResponse = async () => {
-    let responseText = "";
+  // 递归式流式渲染组件
+  const StreamWithRecursion = async (props: { accumulator?: string }) => {
+    const currentAccumulator = props.accumulator || "";
 
-    // 使用循环处理流式数据更新
-    while (true) {
-      const { done, value } = await llmReader.read();
-      if (done) break;
+    // 从流中读取下一个片段
+    const { done, value } = await llmGenerator.next();
 
-      responseText += value;
-      // React 19的服务器组件会在每次循环后更新UI
+    // 如果流结束，返回最终结果
+    if (done) {
+      return (
+        <ParseToMarkdown
+          block={currentAccumulator}
+          data-message-id={messageId}
+        />
+      );
     }
 
-    return <ParseToMarkdown block={responseText} data-message-id={messageId} />;
+    // 更新累积文本
+    const newAccumulator = currentAccumulator + value;
+
+    // 渲染当前文本，并设置下一次更新
+    return (
+      <Suspense
+        fallback={
+          <>
+            <ParseToMarkdown
+              block={newAccumulator}
+              data-message-id={messageId}
+            />
+            <p>...</p>
+          </>
+        }
+      >
+        <StreamWithRecursion accumulator={newAccumulator} />
+      </Suspense>
+    );
   };
 
   return (
@@ -66,7 +89,7 @@ export const getLLMResponseReactNode = async (messages: Message[]) => {
       </UserMessageWrapper>
       <AssistantMessageWrapper>
         <Suspense fallback={<div>Loading...</div>}>
-          <StreamingResponse />
+          <StreamWithRecursion />
         </Suspense>
       </AssistantMessageWrapper>
     </>
