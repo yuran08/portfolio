@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +32,7 @@ export default function ChatPageLayout({
           <h1 className="text-2xl font-bold">𝓎𝓇 𝒸𝒽𝒶𝓉</h1>
           <button className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-left font-semibold text-white hover:bg-blue-700">
             <span>&#x270E;</span>
-            <span>开启新对话</span>
+            <Link href="/chat">开启新对话</Link>
           </button>
           <div className="flex-1 space-y-2 overflow-y-auto">
             <p className="text-xs text-gray-400">昨天</p>
