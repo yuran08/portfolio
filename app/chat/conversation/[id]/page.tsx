@@ -1,4 +1,10 @@
-import ChatInput from "../../chat-input";
+import Link from "next/link";
+import prisma from "@/lib/prisma";
+import ClientPage from "./client-page";
+import {
+  getInitConversationReactNode,
+  getLLMResponseReactNode,
+} from "../../action";
 
 export default async function Conversation({
   params,
@@ -6,12 +12,29 @@ export default async function Conversation({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  console.log(id);
+
+  const conversation = await prisma.conversation.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!conversation) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center">
+        <div>Conversation not found</div>
+        <Link href="/chat" className="text-blue-500">
+          back to chat
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center overflow-hidden p-6">
-      <div className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"></div>
-      <ChatInput />
-    </div>
+    <ClientPage
+      conversationId={id}
+      getLLMResponseReactNode={getLLMResponseReactNode}
+      initConversationReactNode={await getInitConversationReactNode(id)}
+    />
   );
 }
