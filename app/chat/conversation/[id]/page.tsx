@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import ClientPage from "./client-page";
 import {
   getInitConversationReactNode,
-  getLLMResponseReactNode,
+  conversationAddMessage,
 } from "../../action";
 
 export default async function Conversation({
@@ -33,8 +33,8 @@ export default async function Conversation({
   return (
     <ClientPage
       conversationId={id}
-      getLLMResponseReactNode={getLLMResponseReactNode}
       initConversationReactNode={await getInitConversationReactNode(id)}
+      conversationAddMessage={conversationAddMessage}
     />
   );
 }

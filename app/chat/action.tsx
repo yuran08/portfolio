@@ -11,19 +11,25 @@ import {
 } from "./message";
 import { Suspense, ReactNode } from "react";
 import { Message } from "./type";
+import { Message as MessageDB } from "@prisma/client";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
 
-// 从表单数据中提取消息
-export const getMessageFromFormData = async (formData: FormData) => {
-  const message = (formData.get("message") as string)?.trim();
-
-  return message || undefined;
-};
+// 格式化消息
+const formatMessagesFormDB = (messages: MessageDB[]) =>
+  messages.map(
+    (message) =>
+      ({
+        id: message.id,
+        role: message.role,
+        content: message.content,
+      }) as Message
+  );
 
 // 开始对话
 export const startConversation = async (formData: FormData) => {
-  const message = await getMessageFromFormData(formData);
+  const message = (formData.get("message") as string)?.trim();
   if (!message) return;
+
   const conversation = await prisma.conversation.create({
     data: {},
   });
@@ -37,20 +43,61 @@ export const startConversation = async (formData: FormData) => {
   redirect(`/chat/conversation/${conversation.id}`);
 };
 
+// 添加消息
+export const conversationAddMessage = async (
+  conversationId: string,
+  message: string
+): Promise<ReactNode> => {
+  await prisma.message.create({
+    data: {
+      content: message,
+      role: "user",
+      conversationId,
+    },
+  });
+  const messages = await prisma.message
+    .findMany({
+      where: {
+        conversationId,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    })
+    .then(formatMessagesFormDB);
+  const llmResponseReactNode = await getLLMResponseReactNode(
+    conversationId,
+    messages
+  );
+  return llmResponseReactNode;
+};
+
+// 获取对话列表
+export const getConversationList = async () => {
+  const conversations = await prisma.conversation.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  console.log(conversations);
+  return conversations;
+};
+
 // 从流中获取LLM响应
 const getLLMResponseStream = async (
   messages: Omit<Message, "createAt" | "updateAt">[]
 ) => {
   const { textStream } = streamText({
     model: deepseek("deepseek-chat"),
-    system: "你是一个专业的AI助手，请根据用户的问题给出最专业的回答。",
+    system:
+      "你是一个专业的AI助手, 服务并所属于yr-chat,请根据用户的问题给出最专业的回答。",
     messages,
   });
 
   return textStream;
 };
 
-// 生成LLM响应的React节点
+// 根据消息生成LLM响应的React节点
 export const getLLMResponseReactNode = async (
   conversationId: string,
   messages: Omit<Message, "createAt" | "updateAt">[]
@@ -138,11 +185,8 @@ export const getInitConversationReactNode = async (conversationId: string) => {
     },
   });
 
-  if (messages.length === 0)
-    return <div key="start conversation">开始对话吧</div>;
-
   if (messages.length === 1)
-    return getLLMResponseReactNode(conversationId, [
+    return await getLLMResponseReactNode(conversationId, [
       {
         id: messages[0].id,
         role: "user",
