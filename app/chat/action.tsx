@@ -2,7 +2,6 @@
 
 import { streamText } from "ai";
 import { deepseek } from "@ai-sdk/deepseek";
-import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import {
   UserMessageWrapper,
@@ -26,10 +25,7 @@ const formatMessagesFormDB = (messages: MessageDB[]) =>
   );
 
 // 开始对话
-export const startConversation = async (formData: FormData) => {
-  const message = (formData.get("message") as string)?.trim();
-  if (!message) return;
-
+export const startConversation = async (message: string) => {
   const conversation = await prisma.conversation.create({
     data: {},
   });
@@ -40,7 +36,12 @@ export const startConversation = async (formData: FormData) => {
       conversationId: conversation.id,
     },
   });
-  redirect(`/chat/conversation/${conversation.id}`);
+  const conversationList = await prisma.conversation.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return conversationList;
 };
 
 // 添加消息
@@ -130,6 +131,7 @@ export const getLLMResponseReactNode = async (
           content: currentAccumulator,
         },
       });
+      console.log(currentAccumulator, "*ai response result*");
       return (
         <ParseToMarkdown
           block={currentAccumulator}

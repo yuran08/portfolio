@@ -45,7 +45,6 @@ export default function SideBar() {
         <div className="cursor-pointer truncate rounded p-2 text-sm hover:bg-gray-200">
           placeholder
         </div> */}
-        {/* <Suspense fallback={<div>Loading...</div>}> */}
         {conversations.map((conversation) => (
           <div
             key={conversation.id}
@@ -57,12 +56,10 @@ export default function SideBar() {
                 "bg-gray-200"
             )}
             onClick={() => handleConversationClick(conversation.id)}
-            suppressHydrationWarning={true} // 抑制水合警告
           >
             <div className="w-full truncate text-sm">{conversation.id}</div>
           </div>
         ))}
-        {/* </Suspense> */}
       </div>
       {/* <div className="mt-auto border-t border-gray-200 pt-4">
     <div className="flex cursor-pointer items-center space-x-2 rounded p-2 hover:bg-gray-200">

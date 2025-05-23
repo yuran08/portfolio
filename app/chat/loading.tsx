@@ -1,7 +1,8 @@
 export default function Loading() {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="h-16 w-16 rounded-full border-8 border-gray-300 border-t-gray-600 animate-spin" />
+    <div className="flex h-screen w-full flex-col items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
+      <p className="mt-2 text-gray-500">加载中...</p>
     </div>
   );
 }

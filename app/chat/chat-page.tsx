@@ -9,6 +9,7 @@ import {
   startConversation,
 } from "./action";
 import { ReactNode } from "react";
+import { redirect } from "next/navigation";
 
 const ConversationView = ({ conversationId }: { conversationId: string }) => {
   const { conversationCache, setCachedConversation } = useConversation();
@@ -16,13 +17,11 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
 
-  // 客户端挂载检测
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    // 只在客户端挂载后执行
     if (!isMounted) return;
 
     const loadConversation = async () => {
@@ -39,7 +38,7 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
       try {
         // 异步加载对话内容
         const initNode = await getInitConversationReactNode(conversationId);
-        setMessagesNode([initNode]);
+        setMessagesNode((prev) => [...prev, initNode]);
         setCachedConversation(conversationId, initNode);
       } catch (error) {
         console.error("Failed to load conversation:", error);
@@ -51,6 +50,10 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
 
     loadConversation();
   }, [conversationId, conversationCache, setCachedConversation, isMounted]);
+
+  if (!isMounted) {
+    return null;
+  }
 
   const handleAddMessage = async (formData: FormData) => {
     const message = (formData.get("message") as string).trim();
@@ -70,7 +73,7 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
   };
 
   // 服务器端和客户端首次渲染显示加载状态，避免水合差异
-  if (!isMounted || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
@@ -81,10 +84,7 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center overflow-hidden p-6">
-      <div
-        className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        suppressHydrationWarning={true}
-      >
+      <div className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {messagesNode}
       </div>
       <ChatInput action={handleAddMessage} />
@@ -93,7 +93,8 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
 };
 
 export default function ChatPage() {
-  const { currentConversationId } = useConversation();
+  const { currentConversationId, setCurrentConversationId, setConversations } =
+    useConversation();
   const [isMounted, setIsMounted] = useState(false);
 
   // 客户端挂载检测
@@ -101,20 +102,24 @@ export default function ChatPage() {
     setIsMounted(true);
   }, []);
 
-  // 服务器端和客户端首次渲染显示默认状态，避免水合差异
   if (!isMounted) {
-    return (
-      <div className="flex h-full w-full flex-col items-center justify-center p-6">
-        <ChatInput action={startConversation} />
-      </div>
-    );
+    return null;
   }
+
+  const handleStartConversation = async (formData: FormData) => {
+    const message = (formData.get("message") as string)?.trim();
+    if (!message) return;
+    const conversationList = await startConversation(message);
+    setConversations(conversationList);
+    setCurrentConversationId(conversationList[0].id);
+    redirect(`/chat/conversation/${conversationList[0].id}`);
+  };
 
   // 客户端挂载后根据实际状态渲染
   if (!currentConversationId) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center p-6">
-        <ChatInput action={startConversation} />
+        <ChatInput action={handleStartConversation} />
       </div>
     );
   }
