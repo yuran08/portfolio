@@ -2,11 +2,17 @@
 
 import { useConversation } from "./conversation-context";
 import clsx from "clsx";
+import { Trash2, PencilLine } from "lucide-react";
 import { useState, useEffect } from "react";
+import { deleteConversation } from "./action";
 
 export default function SideBar() {
-  const { conversations, currentConversationId, setCurrentConversationId } =
-    useConversation();
+  const {
+    conversations,
+    currentConversationId,
+    setCurrentConversationId,
+    setConversations,
+  } = useConversation();
   const [isMounted, setIsMounted] = useState(false);
 
   // 确保组件在客户端完全挂载后才应用选中样式
@@ -24,6 +30,14 @@ export default function SideBar() {
   const handleNewChatClick = () => {
     setCurrentConversationId(null);
     window.history.pushState(null, "", "/chat");
+  };
+
+  const handleDeleteConversation = async (conversationId: string) => {
+    console.log("handleDeleteConversation", conversationId);
+    await deleteConversation(conversationId);
+    setConversations(
+      conversations.filter((conversation) => conversation.id !== conversationId)
+    );
   };
 
   return (
@@ -46,19 +60,27 @@ export default function SideBar() {
           placeholder
         </div> */}
         {conversations.map((conversation) => (
-          <div
+          <button
             key={conversation.id}
             className={clsx(
-              "mb-2 h-fit w-full cursor-pointer overflow-hidden rounded p-2 text-ellipsis transition-all duration-300 hover:bg-gray-200",
-              // 只有在客户端挂载后才应用选中样式，避免水合差异
+              "mb-2 flex h-fit w-full cursor-pointer items-center justify-between overflow-hidden rounded p-2 text-ellipsis transition-all duration-300 hover:bg-gray-200",
               isMounted &&
                 conversation.id === currentConversationId &&
                 "bg-gray-200"
             )}
             onClick={() => handleConversationClick(conversation.id)}
           >
-            <div className="w-full truncate text-sm">{conversation.id}</div>
-          </div>
+            <div className="w-1/2 truncate text-left text-sm">
+              {conversation.title}
+            </div>
+            <div className="flex items-center space-x-2">
+              {/* <PencilLine className="h-4 w-4 hover:text-blue-500" /> */}
+              <Trash2
+                className="h-4 w-4 hover:text-red-500"
+                onClick={() => handleDeleteConversation(conversation.id)}
+              />
+            </div>
+          </button>
         ))}
       </div>
       {/* <div className="mt-auto border-t border-gray-200 pt-4">

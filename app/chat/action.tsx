@@ -27,7 +27,7 @@ const formatMessagesFormDB = (messages: MessageDB[]) =>
 // 开始对话
 export const startConversation = async (message: string) => {
   const conversation = await prisma.conversation.create({
-    data: {},
+    data: { title: message },
   });
   await prisma.message.create({
     data: {
@@ -42,6 +42,24 @@ export const startConversation = async (message: string) => {
     },
   });
   return conversationList;
+};
+
+// 更新对话标题
+export const updateConversationTitle = async (
+  conversationId: string,
+  title: string
+) => {
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data: { title },
+  });
+};
+
+// 删除对话
+export const deleteConversation = async (conversationId: string) => {
+  await prisma.conversation.delete({
+    where: { id: conversationId },
+  });
 };
 
 // 添加消息
