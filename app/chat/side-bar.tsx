@@ -2,7 +2,7 @@
 
 import { useConversation } from "./conversation-context";
 import clsx from "clsx";
-import { Trash2, PencilLine } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { deleteConversation } from "./action";
 
@@ -42,7 +42,7 @@ export default function SideBar() {
 
   return (
     <aside className="flex w-72 flex-col space-y-4 border-r border-gray-200 p-4">
-      {/* <h1 className="text-2xl font-bold">𝓎𝓇 𝒸𝒽��𝓉</h1> */}
+      {/* <h1 className="text-2xl font-bold">𝓎𝓇 𝒸𝒽𝒶𝓉</h1> */}
       <button
         onClick={handleNewChatClick}
         className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700"
@@ -60,27 +60,29 @@ export default function SideBar() {
           placeholder
         </div> */}
         {conversations.map((conversation) => (
-          <button
-            key={conversation.id}
-            className={clsx(
-              "mb-2 flex h-fit w-full cursor-pointer items-center justify-between overflow-hidden rounded p-2 text-ellipsis transition-all duration-300 hover:bg-gray-200",
-              isMounted &&
-                conversation.id === currentConversationId &&
-                "bg-gray-200"
-            )}
-            onClick={() => handleConversationClick(conversation.id)}
-          >
-            <div className="w-1/2 truncate text-left text-sm">
-              {conversation.title}
-            </div>
-            <div className="flex items-center space-x-2">
-              {/* <PencilLine className="h-4 w-4 hover:text-blue-500" /> */}
-              <Trash2
-                className="h-4 w-4 hover:text-red-500"
-                onClick={() => handleDeleteConversation(conversation.id)}
-              />
-            </div>
-          </button>
+          <div key={conversation.id} className="group relative">
+            {/* 主要点击区域 */}
+            <button
+              className={clsx(
+                "flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm transition-all duration-300 hover:bg-gray-200",
+                isMounted &&
+                  conversation.id === currentConversationId &&
+                  "bg-gray-200"
+              )}
+              onClick={() => handleConversationClick(conversation.id)}
+            >
+              <span className="truncate">{conversation.title}</span>
+            </button>
+
+            {/* 删除按钮 - 绝对定位，在悬停时显示 */}
+            <button
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-300"
+              onClick={() => handleDeleteConversation(conversation.id)}
+              aria-label="删除对话"
+            >
+              <Trash2 className="h-4 w-4 text-gray-600 hover:text-red-500" />
+            </button>
+          </div>
         ))}
       </div>
       {/* <div className="mt-auto border-t border-gray-200 pt-4">
