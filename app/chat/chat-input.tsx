@@ -56,7 +56,7 @@ export default function ChatInput({
         id="message"
         name="message"
         rows={2}
-        placeholder="ask me anything..."
+        placeholder="问任何事情..."
         className="w-full resize-none border-none bg-transparent text-gray-700 placeholder-gray-400 focus:outline-none"
         style={{ overflowY: "hidden" }}
         onKeyDown={handleKeyDown}

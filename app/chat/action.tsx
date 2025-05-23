@@ -79,7 +79,6 @@ export const getConversationList = async () => {
       createdAt: "desc",
     },
   });
-  console.log(conversations);
   return conversations;
 };
 
@@ -184,6 +183,8 @@ export const getInitConversationReactNode = async (conversationId: string) => {
       createdAt: "asc",
     },
   });
+
+  if (messages.length === 0) return <div>No messages</div>;
 
   if (messages.length === 1)
     return await getLLMResponseReactNode(conversationId, [

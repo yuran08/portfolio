@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import SideBar from "./side-bar";
 import "./globals.css";
 import { getConversationList } from "./action";
+import { Suspense } from "react";
+import { ConversationProvider } from "./conversation-context";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -29,11 +32,15 @@ export default async function ChatPageLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex h-screen bg-white text-black antialiased`}
       >
-        <SideBar conversations={conversations} />
+        <ConversationProvider initialConversations={conversations}>
+          <Suspense fallback={<div>Loading...</div>}>
+            <SideBar />
+          </Suspense>
 
-        <main className="flex flex-1 flex-col items-center justify-center">
-          {children}
-        </main>
+          <main className="flex flex-1 flex-col items-center justify-center">
+            {children}
+          </main>
+        </ConversationProvider>
       </body>
     </html>
   );
