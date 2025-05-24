@@ -204,7 +204,12 @@ export const getInitConversationReactNode = async (conversationId: string) => {
     },
   });
 
-  if (messages.length === 0) return <div>No messages</div>;
+  if (messages.length === 0)
+    return (
+      <div key={conversationId} className="flex h-full items-center justify-center">
+        <p>未找到当前对话</p>
+      </div>
+    );
 
   if (messages.length === 1)
     return await getLLMResponseReactNode(conversationId, [

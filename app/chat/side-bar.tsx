@@ -2,10 +2,11 @@
 
 import { useConversation } from "./conversation-context";
 import clsx from "clsx";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { deleteConversation } from "./action";
-
+import RenderFormPending from "./render-form-pending";
+import { FORMERR } from "dns/promises";
 export default function SideBar() {
   const {
     conversations,
@@ -66,8 +67,8 @@ export default function SideBar() {
               className={clsx(
                 "flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm transition-all duration-300 hover:bg-gray-200",
                 isMounted &&
-                  conversation.id === currentConversationId &&
-                  "bg-gray-200"
+                conversation.id === currentConversationId &&
+                "bg-gray-200"
               )}
               onClick={() => handleConversationClick(conversation.id)}
             >
@@ -75,13 +76,24 @@ export default function SideBar() {
             </button>
 
             {/* 删除按钮 - 绝对定位，在悬停时显示 */}
-            <button
-              className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-300"
-              onClick={() => handleDeleteConversation(conversation.id)}
-              aria-label="删除对话"
+            <form
+              action={async () => {
+                await handleDeleteConversation(conversation.id);
+              }}
             >
-              <Trash2 className="h-4 w-4 text-gray-600 hover:text-red-500" />
-            </button>
+              <button
+                className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-300"
+                type="submit"
+                aria-label="删除对话"
+              >
+                <RenderFormPending
+                  pendingNode={<Loader2 className="h-4 w-4 animate-spin" />}
+                  notPendingNode={
+                    <Trash2 className="h-4 w-4 text-gray-600 hover:text-red-500" />
+                  }
+                />
+              </button>
+            </form>
           </div>
         ))}
       </div>

@@ -87,7 +87,10 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center overflow-hidden p-6">
+    <div className="flex relative h-screen w-full flex-col items-center justify-center overflow-hidden p-6">
+      <div className="absolute z-50 top-6 left-0 box-border px-6 w-full h-4 bg-linear-to-r ">
+        <div className=" bg-linear-to-b from-white to-transparent w-full h-full"></div>
+      </div>
       <div className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {messagesNode}
       </div>
