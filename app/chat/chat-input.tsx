@@ -51,7 +51,7 @@ export default function ChatInput({
     <form
       ref={formRef}
       action={action}
-      className="w-full max-w-3xl rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-lg dark:shadow-xl"
+      className="w-full max-w-3xl rounded-xl border border-gray-200 dark:border-slate-700/60 bg-white dark:bg-slate-900/90 p-4 shadow-lg dark:shadow-2xl dark:shadow-slate-950/50"
     >
       <textarea
         ref={textareaRef}
@@ -59,7 +59,7 @@ export default function ChatInput({
         name="message"
         rows={2}
         placeholder="问任何事情..."
-        className="w-full resize-none border-none bg-transparent text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+        className="w-full resize-none border-none bg-transparent text-gray-700 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none"
         style={{ overflowY: "hidden" }}
         onKeyDown={handleKeyDown}
         onCompositionStart={() => setIsComposing(true)}
@@ -68,11 +68,11 @@ export default function ChatInput({
       <div className="flex items-center justify-end">
         <button
           type="submit"
-          className="rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center p-2 text-white hover:bg-blue-600 dark:hover:bg-blue-500"
+          className="rounded-full bg-blue-500 dark:bg-indigo-600 flex items-center justify-center p-2 text-white hover:bg-blue-600 dark:hover:bg-indigo-500 transition-colors duration-200"
         >
           <RenderFormPending
             pendingNode={<Loader2 className="h-4 w-4 animate-spin" />}
-            notPendingNode={<SendIcon className="h-4 w-4" />}
+            notPendingNode={<SendIcon className="h-4 w-4 mt-0.5 transform" />}
           />
         </button>
       </div>

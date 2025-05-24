@@ -42,11 +42,11 @@ export default function SideBar() {
   };
 
   return (
-    <aside className="flex w-72 flex-col space-y-4 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+    <aside className="flex w-72 flex-col space-y-4 border-r border-gray-200 dark:border-slate-700/50 bg-white dark:bg-slate-900/95 p-4">
       {/* <h1 className="text-2xl font-bold">𝓎𝓇 𝒸𝒽𝒶𝓉</h1> */}
       <button
         onClick={handleNewChatClick}
-        className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 dark:bg-blue-700 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700 dark:hover:bg-blue-600"
+        className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 dark:bg-indigo-600 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700 dark:hover:bg-indigo-500"
       >
         <span>&#x270E;</span>
         <span>开启新对话</span>
@@ -65,10 +65,10 @@ export default function SideBar() {
             {/* 主要点击区域 */}
             <button
               className={clsx(
-                "flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100",
+                "flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm transition-all duration-300 hover:bg-gray-200 dark:hover:bg-slate-800/70 text-gray-900 dark:text-slate-200",
                 isMounted &&
                 conversation.id === currentConversationId &&
-                "bg-gray-200 dark:bg-gray-700"
+                "bg-gray-200 dark:bg-slate-800/90"
               )}
               onClick={() => handleConversationClick(conversation.id)}
             >
@@ -82,14 +82,14 @@ export default function SideBar() {
               }}
             >
               <button
-                className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-gray-600"
+                className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-300 dark:hover:bg-slate-700/70"
                 type="submit"
                 aria-label="删除对话"
               >
                 <RenderFormPending
-                  pendingNode={<Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-gray-400" />}
+                  pendingNode={<Loader2 className="h-4 w-4 animate-spin text-gray-600 dark:text-slate-400" />}
                   notPendingNode={
-                    <Trash2 className="h-4 w-4 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400" />
+                    <Trash2 className="h-4 w-4 text-gray-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400" />
                   }
                 />
               </button>
