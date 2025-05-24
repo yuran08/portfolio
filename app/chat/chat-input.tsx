@@ -1,12 +1,5 @@
 "use client";
 
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import clsx from "clsx";
 import { SendIcon, Loader2 } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import RenderFormPending from "./render-form-pending";
