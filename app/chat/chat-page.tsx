@@ -88,17 +88,17 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
   // 服务器端和客户端首次渲染显示加载状态，避免水合差异
   if (messagesNode.length <= 0) {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
-        <p className="mt-2 text-gray-500">加载中...</p>
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-white dark:bg-gray-900">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500 dark:border-blue-400"></div>
+        <p className="mt-2 text-gray-500 dark:text-gray-400">加载中...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex relative h-screen w-full flex-col items-center justify-center overflow-hidden p-6">
-      <div className="absolute z-50 top-6 left-0 box-border px-6 w-full h-4 bg-linear-to-r ">
-        <div className=" bg-linear-to-b from-white to-transparent w-full h-full"></div>
+    <div className="flex relative h-screen w-full flex-col items-center justify-center overflow-hidden p-6 bg-white dark:bg-gray-900">
+      <div className="absolute z-50 top-6 left-0 box-border px-6 w-full h-4 bg-gradient-to-r from-white dark:from-gray-900 to-transparent">
+        <div className="bg-gradient-to-b from-white dark:from-gray-900 to-transparent w-full h-full"></div>
       </div>
       <div
         ref={scrollDivRef}
@@ -137,7 +137,7 @@ export default function ChatPage() {
   // 客户端挂载后根据实际状态渲染
   if (!currentConversationId) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center p-6">
+      <div className="flex h-full w-full flex-col items-center justify-center p-6 bg-white dark:bg-gray-900">
         <ChatInput action={handleStartConversation} />
       </div>
     );

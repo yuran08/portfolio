@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SideBar from "./side-bar";
-import "./globals.css";
+import "@/app/globals.css";
 import { getConversationList } from "./action";
 import { Suspense } from "react";
 import { ConversationProvider } from "./conversation-context";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,19 +30,21 @@ export default async function ChatPageLayout({
   const conversations = await getConversationList();
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} flex h-screen bg-white text-black antialiased`}
-      >
-        <ConversationProvider initialConversations={conversations}>
-          <Suspense fallback={<div>Loading...</div>}>
-            <SideBar />
-          </Suspense>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} flex h-screen bg-white dark:bg-gray-900 text-black dark:text-white antialiased`}
+        >
+          <ConversationProvider initialConversations={conversations}>
+            <Suspense fallback={<div>Loading...</div>}>
+              <SideBar />
+            </Suspense>
 
-          <main className="flex flex-1 flex-col items-center justify-center">
-            {children}
-          </main>
-        </ConversationProvider>
-      </body>
-    </html>
+            <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-gray-900">
+              {children}
+            </main>
+          </ConversationProvider>
+        </body>
+      </ThemeProvider>
+    </html >
   );
 }
