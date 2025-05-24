@@ -49,6 +49,10 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
     };
 
     loadConversation();
+
+    return () => {
+      setMessagesNode([]);
+    };
   }, [conversationId, conversationCache, setCachedConversation, isMounted]);
 
   if (!isMounted) {

@@ -6,57 +6,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import clsx from "clsx";
+import { SendIcon, Loader2 } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
-import { useFormStatus } from "react-dom";
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      type="submit"
-      className="flex cursor-pointer items-center justify-center rounded-full bg-blue-500 p-2 text-white"
-      disabled={pending}
-    >
-      <TooltipProvider>
-        {pending ? (
-          <Tooltip>
-            <TooltipTrigger>
-              <div className="h-4 w-4 rounded-sm bg-white"></div>
-            </TooltipTrigger>
-            <TooltipContent>停止生成</TooltipContent>
-          </Tooltip>
-        ) : (
-          <Tooltip>
-            <TooltipTrigger>
-              <svg
-                width="14"
-                height="16"
-                viewBox="0 0 14 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M7 16c-.595 0-1.077-.462-1.077-1.032V1.032C5.923.462 6.405 0 7 0s1.077.462 1.077 1.032v13.936C8.077 15.538 7.595 16 7 16z"
-                  fill="currentColor"
-                ></path>
-                <path
-                  d="M.315 7.44a1.002 1.002 0 0 1 0-1.46L6.238.302a1.11 1.11 0 0 1 1.523 0c.421.403.421 1.057 0 1.46L1.838 7.44a1.11 1.11 0 0 1-1.523 0z"
-                  fill="currentColor"
-                ></path>
-                <path
-                  d="M13.685 7.44a1.11 1.11 0 0 1-1.523 0L6.238 1.762a1.002 1.002 0 0 1 0-1.46 1.11 1.11 0 0 1 1.523 0l5.924 5.678c.42.403.42 1.056 0 1.46z"
-                  fill="currentColor"
-                ></path>
-              </svg>
-            </TooltipTrigger>
-            <TooltipContent>请输入你的问题</TooltipContent>
-          </Tooltip>
-        )}
-      </TooltipProvider>
-    </button>
-  );
-}
+import RenderFormPending from "./render-form-pending";
 
 export default function ChatInput({
   action,
@@ -120,32 +73,15 @@ export default function ChatInput({
         onCompositionEnd={() => setIsComposing(false)}
       />
       <div className="flex items-center justify-end">
-        <SubmitButton />
-        {/* <button
-            type="submit"
-            className="rounded-full bg-blue-500 p-2 text-white hover:bg-blue-600"
-          >
-            <svg
-              width="14"
-              height="16"
-              viewBox="0 0 14 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7 16c-.595 0-1.077-.462-1.077-1.032V1.032C5.923.462 6.405 0 7 0s1.077.462 1.077 1.032v13.936C8.077 15.538 7.595 16 7 16z"
-                fill="currentColor"
-              ></path>
-              <path
-                d="M.315 7.44a1.002 1.002 0 0 1 0-1.46L6.238.302a1.11 1.11 0 0 1 1.523 0c.421.403.421 1.057 0 1.46L1.838 7.44a1.11 1.11 0 0 1-1.523 0z"
-                fill="currentColor"
-              ></path>
-              <path
-                d="M13.685 7.44a1.11 1.11 0 0 1-1.523 0L6.238 1.762a1.002 1.002 0 0 1 0-1.46 1.11 1.11 0 0 1 1.523 0l5.924 5.678c.42.403.42 1.056 0 1.46z"
-                fill="currentColor"
-              ></path>
-            </svg>
-          </button> */}
+        <button
+          type="submit"
+          className="rounded-full bg-blue-500 flex items-center justify-center p-2 text-white hover:bg-blue-600"
+        >
+          <RenderFormPending
+            pendingNode={<Loader2 className="h-4 w-4 animate-spin" />}
+            notPendingNode={<SendIcon className="h-4 w-4" />}
+          />
+        </button>
       </div>
     </form>
   );
