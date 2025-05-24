@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useConversation } from "./conversation-context";
 import ChatInput from "./chat-input";
 import {
@@ -14,24 +14,35 @@ import { redirect } from "next/navigation";
 const ConversationView = ({ conversationId }: { conversationId: string }) => {
   const { conversationCache, setCachedConversation } = useConversation();
   const [messagesNode, setMessagesNode] = useState<ReactNode[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const scrollDivRef = useRef<HTMLDivElement>(null);
+
+  // 滚动到底部的函数
+  const scrollToBottom = () => {
+    if (scrollDivRef.current) {
+      scrollDivRef.current.scrollTop = scrollDivRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
   useEffect(() => {
+    if (messagesNode.length > 0) {
+      scrollToBottom();
+    }
+  }, [messagesNode]);
+
+  useEffect(() => {
     if (!isMounted) return;
 
     const loadConversation = async () => {
-      setIsLoading(true);
 
       // 检查缓存
       const cached = conversationCache.get(conversationId);
       if (cached) {
         setMessagesNode([cached]);
-        setIsLoading(false);
         return;
       }
 
@@ -43,8 +54,6 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
       } catch (error) {
         console.error("Failed to load conversation:", error);
         setMessagesNode([<div key="error">加载对话失败</div>]);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -77,7 +86,7 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
   };
 
   // 服务器端和客户端首次渲染显示加载状态，避免水合差异
-  if (isLoading) {
+  if (messagesNode.length <= 0) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
@@ -91,7 +100,10 @@ const ConversationView = ({ conversationId }: { conversationId: string }) => {
       <div className="absolute z-50 top-6 left-0 box-border px-6 w-full h-4 bg-linear-to-r ">
         <div className=" bg-linear-to-b from-white to-transparent w-full h-full"></div>
       </div>
-      <div className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={scrollDivRef}
+        className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {messagesNode}
       </div>
       <ChatInput action={handleAddMessage} />

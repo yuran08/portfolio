@@ -6,7 +6,6 @@ import { Trash2, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { deleteConversation } from "./action";
 import RenderFormPending from "./render-form-pending";
-import { FORMERR } from "dns/promises";
 export default function SideBar() {
   const {
     conversations,
@@ -34,11 +33,12 @@ export default function SideBar() {
   };
 
   const handleDeleteConversation = async (conversationId: string) => {
-    console.log("handleDeleteConversation", conversationId);
     await deleteConversation(conversationId);
     setConversations(
       conversations.filter((conversation) => conversation.id !== conversationId)
     );
+    setCurrentConversationId(null)
+    window.history.pushState(null, "", "/chat");
   };
 
   return (
