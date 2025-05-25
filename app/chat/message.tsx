@@ -1,10 +1,11 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
+import { ComponentPropsWithoutRef } from "react";
 
 const loadHighlightStyle = (theme: string) => {
   // 移除之前的样式
@@ -71,34 +72,46 @@ export const ParseToMarkdown = ({
     }
   }, [resolvedTheme]);
 
+  const components: Components = {
+    code: ({
+      inline,
+      className,
+      children,
+      ...props
+    }: ComponentPropsWithoutRef<'code'> & {
+      inline?: boolean;
+    }) => {
+      if (inline) {
+        return (
+          <code className={`${className} px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-sm font-mono`} {...props}>
+            {children}
+          </code>
+        );
+      }
+      return (
+        <code className={`${className} block`} {...props}>
+          {children}
+        </code>
+      );
+    },
+    pre: ({
+      children,
+      ...props
+    }: ComponentPropsWithoutRef<'pre'>) => {
+      return (
+        <pre className="overflow-x-auto rounded-lg my-4 border border-gray-200 dark:border-gray-700" {...props}>
+          {children}
+        </pre>
+      );
+    }
+  };
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeHighlight]}
       key={messageId}
-      components={{
-        code: ({ inline, className, children, ...props }: any) => {
-          if (inline) {
-            return (
-              <code className={`${className} px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-sm font-mono`} {...props}>
-                {children}
-              </code>
-            );
-          }
-          return (
-            <code className={`${className} block`} {...props}>
-              {children}
-            </code>
-          );
-        },
-        pre: ({ children, ...props }: any) => {
-          return (
-            <pre className="overflow-x-auto rounded-lg my-4 border border-gray-200 dark:border-gray-700" {...props}>
-              {children}
-            </pre>
-          );
-        }
-      }}
+      components={components}
     >
       {block}
     </ReactMarkdown>
