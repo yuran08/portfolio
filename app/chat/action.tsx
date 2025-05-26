@@ -2,7 +2,7 @@
 
 import { streamText } from "ai";
 import { deepseek } from "@ai-sdk/deepseek";
-import prisma from "@/lib/prisma";
+import { db } from "@/lib/redis-adapter";
 import {
   UserMessageWrapper,
   AssistantMessageWrapper,
@@ -10,37 +10,19 @@ import {
 } from "./message";
 import { Suspense, ReactNode } from "react";
 import { Message } from "./type";
-import { Message as MessageDB } from "@prisma/client";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
-
-// 格式化消息
-const formatMessagesFormDB = (messages: MessageDB[]) =>
-  messages.map(
-    (message) =>
-      ({
-        id: message.id,
-        role: message.role,
-        content: message.content,
-      }) as Message
-  );
 
 // 开始对话
 export const startConversation = async (message: string) => {
-  const conversation = await prisma.conversation.create({
-    data: { title: message },
+  const conversation = await db.conversation.create({
+    title: message,
   });
-  await prisma.message.create({
-    data: {
-      content: message,
-      role: "user",
-      conversationId: conversation.id,
-    },
+  await db.message.create({
+    content: message,
+    role: "user",
+    conversationId: conversation.id,
   });
-  const conversationList = await prisma.conversation.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const conversationList = await db.conversation.findMany();
   return conversationList;
 };
 
@@ -49,17 +31,12 @@ export const updateConversationTitle = async (
   conversationId: string,
   title: string
 ) => {
-  await prisma.conversation.update({
-    where: { id: conversationId },
-    data: { title },
-  });
+  await db.conversation.update(conversationId, { title });
 };
 
 // 删除对话
 export const deleteConversation = async (conversationId: string) => {
-  await prisma.conversation.delete({
-    where: { id: conversationId },
-  });
+  await db.conversation.delete(conversationId);
 };
 
 // 添加消息
@@ -67,23 +44,12 @@ export const conversationAddMessage = async (
   conversationId: string,
   message: string
 ): Promise<ReactNode> => {
-  await prisma.message.create({
-    data: {
-      content: message,
-      role: "user",
-      conversationId,
-    },
+  await db.message.create({
+    content: message,
+    role: "user",
+    conversationId,
   });
-  const messages = await prisma.message
-    .findMany({
-      where: {
-        conversationId,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    })
-    .then(formatMessagesFormDB);
+  const messages = await db.message.findByConversationId(conversationId);
   const llmResponseReactNode = await getLLMResponseReactNode(
     conversationId,
     messages
@@ -93,11 +59,7 @@ export const conversationAddMessage = async (
 
 // 获取对话列表
 export const getConversationList = async () => {
-  const conversations = await prisma.conversation.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const conversations = await db.conversation.findMany();
   return conversations;
 };
 
@@ -122,13 +84,11 @@ export const getLLMResponseReactNode = async (
 ): Promise<ReactNode> => {
   const llmReader = (await getLLMResponseStream(messages)).getReader();
   const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
-  const messageId = await prisma.message
+  const messageId = await db.message
     .create({
-      data: {
-        content: "",
-        role: "assistant",
-        conversationId,
-      },
+      content: "",
+      role: "assistant",
+      conversationId,
     })
     .then((message) => message.id);
 
@@ -141,13 +101,8 @@ export const getLLMResponseReactNode = async (
 
     // 如果流结束，返回最终结果
     if (done) {
-      await prisma.message.update({
-        where: {
-          id: messageId,
-        },
-        data: {
-          content: currentAccumulator,
-        },
+      await db.message.update(messageId, {
+        content: currentAccumulator,
       });
       console.log(currentAccumulator, "*ai response result*");
       return (
@@ -195,18 +150,14 @@ export const getLLMResponseReactNode = async (
 
 // 获取初始对话的React节点
 export const getInitConversationReactNode = async (conversationId: string) => {
-  const messages = await prisma.message.findMany({
-    where: {
-      conversationId,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+  const messages = await db.message.findByConversationId(conversationId);
 
   if (messages.length === 0)
     return (
-      <div key={conversationId} className="flex h-full items-center justify-center">
+      <div
+        key={conversationId}
+        className="flex h-full items-center justify-center"
+      >
         <p>未找到当前对话</p>
       </div>
     );
