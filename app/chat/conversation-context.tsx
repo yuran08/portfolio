@@ -7,7 +7,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { Conversation } from "@prisma/client";
+import { Conversation } from "@/lib/redis-adapter";
 import { usePathname } from "next/navigation";
 
 type ConversationContextType = {

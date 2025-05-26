@@ -9,9 +9,7 @@
     "lint": "next lint",
     "postinstall": "prisma generate",
     "db:studio": "npx prisma studio",
-    "db:push": "npx prisma db push",
-    "redis:test": "tsx scripts/test-redis-store.ts",
-    "redis:migrate": "tsx scripts/migrate-to-redis.ts"
+    "db:push": "npx prisma db push"
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^0.2.14",
