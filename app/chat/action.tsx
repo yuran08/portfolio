@@ -70,8 +70,7 @@ const getLLMResponseStream = async (
 ) => {
   const { textStream } = streamText({
     model: deepseek("deepseek-chat"),
-    system:
-      "你是一个专业的AI助手, 服务并所属于yr-chat,请根据用户的问题给出最专业的回答。",
+    system: `你是一个专业的AI助手, 服务并所属于yr-chat,请根据用户的问题给出最专业的回答。今天的日期是${new Date().toLocaleDateString()}`,
     messages,
   });
 
