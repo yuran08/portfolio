@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Sparkles } from "lucide-react";
 
 // 基础 Skeleton 组件
 export function Skeleton({
@@ -20,25 +21,36 @@ export function Skeleton({
 // 消息骨架屏
 export function MessageSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 用户消息骨架 */}
-      <div className="my-4 rounded-2xl border border-gray-200 bg-gray-100 p-6 dark:border-slate-700/60 dark:bg-slate-800/80">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+      <div className="flex justify-end">
+        <div className="max-w-[80%] rounded-2xl bg-blue-600 px-4 py-3 shadow-lg dark:bg-blue-500">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-48 bg-blue-500 dark:bg-blue-400" />
+            <Skeleton className="h-4 w-32 bg-blue-500 dark:bg-blue-400" />
+          </div>
         </div>
       </div>
 
       {/* AI 响应骨架 */}
-      <div className="my-4 rounded-2xl border border-blue-100 bg-blue-50 p-6 dark:border-indigo-500/30 dark:bg-gradient-to-br dark:from-slate-800/90 dark:to-indigo-950/40">
-        <div className="space-y-3">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-4/5" />
-          <div className="mt-4 flex items-center space-x-2">
-            <Skeleton className="h-3 w-3 rounded-full" />
-            <Skeleton className="h-3 w-3 rounded-full" />
-            <Skeleton className="h-3 w-3 rounded-full" />
+      <div className="flex justify-start">
+        <div className="flex w-full max-w-full items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
+            <Sparkles size={16} />
+          </div>
+          <div className="min-w-0 flex-1 bg-gray-50 px-4 py-3 shadow-sm dark:bg-slate-800/80">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-[90%]" />
+              <Skeleton className="h-4 w-[85%]" />
+              <Skeleton className="h-4 w-[75%]" />
+              <Skeleton className="h-4 w-[80%]" />
+              <div className="mt-4 flex items-center space-x-2">
+                <Skeleton className="h-3 w-3 rounded-full" />
+                <Skeleton className="h-3 w-3 rounded-full" />
+                <Skeleton className="h-3 w-3 rounded-full" />
+              </div>
+            </div>
           </div>
         </div>
       </div>

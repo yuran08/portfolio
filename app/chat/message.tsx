@@ -7,6 +7,7 @@ import remarkBreaks from "remark-breaks";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
 import { ComponentPropsWithoutRef } from "react";
+import { Sparkles } from "lucide-react";
 
 const loadHighlightStyle = (theme: string) => {
   // 移除之前的样式
@@ -33,11 +34,9 @@ export const UserMessageWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="my-4 rounded-2xl border border-gray-200 bg-gray-100 p-6 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/80 dark:shadow-slate-900/20 dark:hover:shadow-xl">
-      <div className="items-start gap-3">
-        <div className="prose prose-gray dark:prose-invert prose-sm max-w-full text-gray-900 dark:text-slate-100">
-          {children}
-        </div>
+    <div className="my-6 flex justify-end">
+      <div className="max-w-[80%] rounded-2xl bg-blue-600 px-4 py-3 text-white shadow-lg dark:bg-blue-500">
+        <div className="prose prose-invert prose-sm max-w-none">{children}</div>
       </div>
     </div>
   );
@@ -49,10 +48,15 @@ export const AssistantMessageWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="my-4 rounded-2xl border border-blue-100 bg-blue-50 p-6 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-indigo-500/30 dark:bg-gradient-to-br dark:from-slate-800/90 dark:to-indigo-950/40 dark:shadow-slate-900/20 dark:hover:shadow-xl">
-      <div className="items-start gap-3">
-        <div className="prose prose-indigo dark:prose-invert prose-sm max-w-full text-gray-900 dark:text-slate-100">
-          {children}
+    <div className="my-6 flex justify-start">
+      <div className="flex w-full max-w-full items-start gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
+          <Sparkles size={16} />
+        </div>
+        <div className="min-w-0 flex-1 rounded-2xl bg-gray-50 px-4 py-3 shadow-sm dark:bg-slate-800/80">
+          <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
+            {children}
+          </div>
         </div>
       </div>
     </div>
