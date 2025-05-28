@@ -66,7 +66,7 @@ export function SidebarSkeleton() {
 
       {/* 对话列表骨架 */}
       <div className="flex-1 space-y-2">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+        {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="group relative">
             <Skeleton className="h-12 w-full rounded" />
           </div>
@@ -140,7 +140,7 @@ export function LoadingWithText({
   size?: "sm" | "md" | "lg";
 }) {
   return (
-    <div className="flex items-center justify-center space-x-2 p-4">
+    <div className="flex items-center justify-center space-x-2">
       <LoadingSpinner size={size} />
       <span className="text-sm text-gray-600 dark:text-slate-400">{text}</span>
     </div>

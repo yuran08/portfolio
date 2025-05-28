@@ -11,6 +11,7 @@ import {
 import { Suspense, ReactNode } from "react";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
+import { LoadingWithText } from "./skeleton";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -125,7 +126,6 @@ export const getLLMResponseReactNode = async (
               block={newAccumulator}
               data-message-id={messageId.toString()}
             />
-            <p>...</p>
           </>
         }
       >
@@ -140,7 +140,7 @@ export const getLLMResponseReactNode = async (
         {messages[messages.length - 1].content}
       </UserMessageWrapper>
       <AssistantMessageWrapper>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
           <StreamWithRecursion />
         </Suspense>
       </AssistantMessageWrapper>

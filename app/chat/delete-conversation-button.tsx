@@ -34,7 +34,6 @@ export function DeleteConversationButton({
   const handleDelete = async () => {
     await deleteConversation(conversationId);
     router.push("/chat");
-    router.refresh();
   };
 
   return (
