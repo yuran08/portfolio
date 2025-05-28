@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { getInitConversationReactNode } from "./action";
 import ChatInput from "./chat-input";
 import { ConversationMessages } from "./conversation-messages";
+import { ChatInputSkeleton, LoadingWithText } from "./skeleton";
 
 export default async function ServerChatPage({
   conversationId,
@@ -19,12 +21,16 @@ export default async function ServerChatPage({
         <div className="h-full w-full bg-gradient-to-b from-white to-transparent dark:from-slate-950"></div>
       </div>
 
-      <ConversationMessages
-        conversationId={conversationId}
-        initialMessages={initialMessages}
-      />
+      <Suspense fallback={<LoadingWithText text="加载对话历史..." />}>
+        <ConversationMessages
+          conversationId={conversationId}
+          initialMessages={initialMessages}
+        />
+      </Suspense>
 
-      <ChatInput conversationId={conversationId} />
+      <Suspense fallback={<ChatInputSkeleton />}>
+        <ChatInput conversationId={conversationId} />
+      </Suspense>
     </div>
   );
 }
