@@ -193,7 +193,7 @@ export const ParseToMarkdown = ({
     // 列表样式
     ul: ({ children, ...props }: ComponentPropsWithoutRef<"ul">) => (
       <ul
-        className="mb-4 list-inside list-disc space-y-1 text-gray-800 dark:text-slate-200"
+        className="mb-4 list-outside list-disc space-y-1 pl-6 text-gray-800 dark:text-slate-200"
         {...props}
       >
         {children}
@@ -201,14 +201,14 @@ export const ParseToMarkdown = ({
     ),
     ol: ({ children, ...props }: ComponentPropsWithoutRef<"ol">) => (
       <ol
-        className="mb-4 list-inside list-decimal space-y-1 text-gray-800 dark:text-slate-200"
+        className="mb-4 list-outside list-decimal space-y-1 pl-6 text-gray-800 dark:text-slate-200"
         {...props}
       >
         {children}
       </ol>
     ),
     li: ({ children, ...props }: ComponentPropsWithoutRef<"li">) => (
-      <li className="mb-1" {...props}>
+      <li className="mb-1 leading-relaxed" {...props}>
         {children}
       </li>
     ),
