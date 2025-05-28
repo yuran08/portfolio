@@ -9,7 +9,7 @@ export default function Chat() {
       <Suspense fallback={<SidebarSkeleton />}>
         <SideBar />
       </Suspense>
-      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-slate-950">
+      <main className="flex flex-1 flex-col bg-white dark:bg-slate-950">
         <Suspense fallback={<NewChatSkeleton />}>
           <ChatPage />
         </Suspense>

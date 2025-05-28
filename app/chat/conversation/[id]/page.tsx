@@ -14,7 +14,7 @@ export default async function Conversation({
       <Suspense fallback={<SidebarSkeleton />}>
         <SideBar currentConversationId={id} />
       </Suspense>
-      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-slate-950">
+      <main className="flex flex-1 flex-col bg-white dark:bg-slate-950">
         <Suspense fallback={<ChatPageSkeleton />}>
           <ChatPage conversationId={id} />
         </Suspense>

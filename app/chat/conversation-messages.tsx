@@ -13,18 +13,21 @@ export function ConversationMessages({
   const [messagesNode, setMessagesNode] = useState<ReactNode[]>([
     initialMessages,
   ]);
-  const scrollDivRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // 滚动到底部的函数
+  // 滚动到底部的函数 - 现在滚动父容器
   const scrollToBottom = () => {
-    if (scrollDivRef.current) {
-      scrollDivRef.current.scrollTop = scrollDivRef.current.scrollHeight;
+    // 查找可滚动的父容器
+    const scrollableParent = containerRef.current?.closest('[class*="overflow-y-auto"]') as HTMLElement;
+    if (scrollableParent) {
+      scrollableParent.scrollTop = scrollableParent.scrollHeight;
     }
   };
 
   useEffect(() => {
     if (messagesNode.length > 0) {
-      scrollToBottom();
+      // 延迟滚动，确保DOM已更新
+      setTimeout(scrollToBottom, 100);
     }
   }, [messagesNode]);
 
@@ -62,8 +65,8 @@ export function ConversationMessages({
 
   return (
     <div
-      ref={scrollDivRef}
-      className="w-full max-w-3xl flex-1 overflow-scroll [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      ref={containerRef}
+      className="w-full"
     >
       {messagesNode}
     </div>

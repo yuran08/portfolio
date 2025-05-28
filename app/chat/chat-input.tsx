@@ -90,7 +90,7 @@ export default function ChatInput({
     <form
       ref={formRef}
       action={finalAction}
-      className="w-full max-w-3xl rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-slate-700/60 dark:bg-slate-900/90 dark:shadow-2xl dark:shadow-slate-950/50"
+      className="w-full rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-slate-700/60 dark:bg-slate-900/90 dark:shadow-2xl dark:shadow-slate-950/50"
     >
       <textarea
         ref={textareaRef}
