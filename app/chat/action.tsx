@@ -179,7 +179,7 @@ export const getInitConversationReactNode = async (conversationId: string) => {
           </UserMessageWrapper>
         ) : (
           <AssistantMessageWrapper key={message.id}>
-            <ParseToMarkdown block={message.content} />
+            <ParseToMarkdown block={message.content || "## 系统错误，请重试"} />
           </AssistantMessageWrapper>
         )
       )}
