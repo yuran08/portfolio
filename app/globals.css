@@ -141,3 +141,162 @@
   z-index: 9999; /* 新视图在最上方 */
   mix-blend-mode: normal; /* 避免混合模式干扰 clip-path */
 }
+
+/* Markdown 代码样式优化 */
+.markdown-content {
+  /* 防止内容跳动 */
+  min-height: 1em;
+}
+
+/* 内联代码样式 */
+.inline-code {
+  @apply rounded-md border border-gray-300 bg-gray-200 px-1.5 py-0.5 font-mono text-sm text-gray-800;
+  @apply dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200;
+  /* 防止闪烁的过渡效果 */
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* 代码块容器 */
+.code-block-wrapper {
+  @apply my-4;
+  /* 预留空间，防止布局跳动 */
+  min-height: 3rem;
+}
+
+/* 代码块样式 */
+.code-block {
+  @apply overflow-x-auto rounded-lg border border-gray-200 bg-gray-50;
+  @apply dark:border-gray-700 dark:bg-gray-900;
+  /* 平滑过渡效果 */
+  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  /* 确保代码块有最小高度 */
+  min-height: 2.5rem;
+  padding: 1rem;
+}
+
+/* 代码块加载状态 */
+.code-block-loading {
+  opacity: 0.8;
+  /* 添加微妙的加载动画 */
+  background: linear-gradient(90deg, 
+    rgb(249 250 251) 25%, 
+    rgb(243 244 246) 50%, 
+    rgb(249 250 251) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .code-block-loading {
+  background: linear-gradient(90deg, 
+    rgb(17 24 39) 25%, 
+    rgb(31 41 55) 50%, 
+    rgb(17 24 39) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 代码块内的代码元素 */
+.code-block code {
+  @apply font-mono text-sm;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* highlight.js 样式优化 */
+.hljs {
+  background: transparent !important;
+  padding: 0 !important;
+  /* 确保代码高亮的平滑过渡 */
+  transition: color 0.15s ease;
+}
+
+/* 防止代码块内容闪烁 */
+.code-block pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* 优化代码块的滚动条 */
+.code-block::-webkit-scrollbar {
+  height: 6px;
+}
+
+.code-block::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+  border-radius: 3px;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600;
+  border-radius: 3px;
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* 确保语法高亮的颜色在主题切换时平滑过渡 */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-link {
+  transition: color 0.15s ease;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-name,
+.hljs-type,
+.hljs-attribute,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-built_in,
+.hljs-addition,
+.hljs-variable,
+.hljs-template-tag,
+.hljs-template-variable {
+  transition: color 0.15s ease;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion,
+.hljs-meta {
+  transition: color 0.15s ease;
+}
+
+/* 防止代码块在流式渲染时的布局跳动 */
+.streaming-markdown .code-block-wrapper {
+  /* 为流式渲染的代码块预留更多空间 */
+  min-height: 4rem;
+}
+
+/* 优化表格在代码块中的显示 */
+.code-block table {
+  margin: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.code-block table td,
+.code-block table th {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(156, 163, 175, 0.3);
+}
