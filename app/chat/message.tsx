@@ -100,7 +100,7 @@ export const ParseToMarkdown = ({
       }
       return (
         <code
-          className={`${className} rounded-md border border-gray-300 bg-gray-200 px-1.5 py-0.5 font-mono text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200`}
+          className={`${className} rounded-md border border-gray-300 bg-gray-200 px-1.5 py-0.5 font-mono text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-200`}
           {...props}
         >
           {children}
