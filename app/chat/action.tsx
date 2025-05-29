@@ -12,7 +12,6 @@ import { Suspense, ReactNode } from "react";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
 import { LoadingWithText } from "./skeleton";
-import { StreamingMarkdown } from "./streaming-markdown";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -106,12 +105,7 @@ export const getLLMResponseReactNode = async (
         content: currentAccumulator,
       });
       console.log(currentAccumulator, "*ai response result*");
-      return (
-        <StreamingMarkdown
-          block={currentAccumulator}
-          data-message-id={messageId.toString()}
-        />
-      );
+      return <ParseToMarkdown block={currentAccumulator} />;
     }
 
     // 更新累积文本
@@ -119,14 +113,7 @@ export const getLLMResponseReactNode = async (
 
     // 渲染当前文本，并设置下一次更新
     return (
-      <Suspense
-        fallback={
-          <StreamingMarkdown
-            block={newAccumulator}
-            data-message-id={messageId.toString()}
-          />
-        }
-      >
+      <Suspense fallback={<ParseToMarkdown block={newAccumulator} />}>
         <StreamWithRecursion accumulator={newAccumulator} />
       </Suspense>
     );
