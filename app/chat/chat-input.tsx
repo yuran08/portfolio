@@ -22,7 +22,11 @@ export default function ChatInput({
   const defaultAction = async (formData: FormData) => {
     const message = (formData.get("message") as string)?.trim();
     if (!message) return;
-
+    // 清空输入框
+    if (textareaRef.current) {
+      textareaRef.current.value = "";
+      adjustTextareaHeight();
+    }
     if (conversationId) {
       // 如果有 conversationId，添加消息到现有对话
       if (
