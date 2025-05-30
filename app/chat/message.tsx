@@ -3,6 +3,7 @@
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+import rehypeKatex from "rehype-katex";
 import remarkBreaks from "remark-breaks";
 import { useMemo } from "react";
 import { ComponentPropsWithoutRef } from "react";
@@ -260,7 +261,7 @@ export const ParseToMarkdown = ({
           remarkGfm,
           remarkBreaks, // 支持软换行
         ]}
-        rehypePlugins={[rehypeHighlight]}
+        rehypePlugins={[rehypeHighlight, rehypeKatex]}
         key={messageId}
         components={components}
         // 确保正确处理换行
