@@ -43,15 +43,34 @@ export class MessageStore {
       updatedAt: now,
     };
 
+    // 使用Pipeline批量执行所有操作，提高性能
+    const pipeline = redis.pipeline();
+
     // 存储消息
-    await redis.hmset(generateRedisKey.message(messageId), message);
+    pipeline.hmset(generateRedisKey.message(messageId), message);
 
     // 将消息ID添加到对话的消息列表中（按时间顺序）
-    await redis.zadd(
+    pipeline.zadd(
       generateRedisKey.conversationMessages(data.conversationId),
       Date.now(),
       messageId
     );
+
+    // 更新对话的updatedAt字段
+    pipeline.hset(
+      generateRedisKey.conversation(data.conversationId),
+      "updatedAt",
+      now
+    );
+
+    // 更新对话列表中的时间戳（用于排序）
+    pipeline.zadd(
+      REDIS_KEYS.CONVERSATION_LIST,
+      Date.now(),
+      data.conversationId
+    );
+
+    await pipeline.exec();
 
     return message;
   }
@@ -108,13 +127,34 @@ export class MessageStore {
       return null;
     }
 
+    const now = new Date().toISOString();
     const updatedMessage: RedisMessage = {
       ...existingMessage,
       ...data,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
     };
 
-    await redis.hmset(generateRedisKey.message(id), updatedMessage);
+    // 使用Pipeline批量更新消息和对话时间戳
+    const pipeline = redis.pipeline();
+
+    // 更新消息
+    pipeline.hmset(generateRedisKey.message(id), updatedMessage);
+
+    // 更新对话的updatedAt字段
+    pipeline.hset(
+      generateRedisKey.conversation(existingMessage.conversationId),
+      "updatedAt",
+      now
+    );
+
+    // 更新对话列表中的时间戳（用于排序）
+    pipeline.zadd(
+      REDIS_KEYS.CONVERSATION_LIST,
+      Date.now(),
+      existingMessage.conversationId
+    );
+
+    await pipeline.exec();
 
     return updatedMessage;
   }
@@ -178,7 +218,7 @@ export class ConversationStore {
     return conversationData as unknown as RedisConversation;
   }
 
-  // 获取所有对话（按创建时间倒序）
+  // 获取所有对话（按最后更新时间倒序）
   static async findMany(): Promise<RedisConversation[]> {
     // 获取对话ID列表（按时间倒序）
     const conversationIds = await redis.zrevrange(
@@ -217,13 +257,23 @@ export class ConversationStore {
       return null;
     }
 
+    const now = new Date().toISOString();
     const updatedConversation: RedisConversation = {
       ...existingConversation,
       ...data,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
     };
 
-    await redis.hmset(generateRedisKey.conversation(id), updatedConversation);
+    // 使用Pipeline批量更新对话和排序列表
+    const pipeline = redis.pipeline();
+
+    // 更新对话
+    pipeline.hmset(generateRedisKey.conversation(id), updatedConversation);
+
+    // 更新对话列表中的时间戳（用于排序）
+    pipeline.zadd(REDIS_KEYS.CONVERSATION_LIST, Date.now(), id);
+
+    await pipeline.exec();
 
     return updatedConversation;
   }

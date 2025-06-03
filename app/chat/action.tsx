@@ -9,6 +9,7 @@ import {
   ParseToMarkdown,
 } from "./message";
 import { Suspense, ReactNode } from "react";
+import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
 import { LoadingWithText } from "./skeleton";
@@ -50,6 +51,7 @@ export const conversationAddMessage = async (
     role: "user",
     conversationId,
   });
+  revalidatePath(`/chat/conversation/${conversationId}`);
   const messages = await db.message.findByConversationId(conversationId);
   const llmResponseReactNode = await getLLMResponseReactNode(
     conversationId,
