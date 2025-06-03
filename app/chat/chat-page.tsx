@@ -21,14 +21,10 @@ export default async function ServerChatPage({
       </div>
 
       {/* 可滚动的消息区域 */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6 pt-10 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="mx-auto max-w-3xl">
-          <ConversationMessages
-            conversationId={conversationId}
-            initialMessages={initialMessages}
-          />
-        </div>
-      </div>
+      <ConversationMessages
+        conversationId={conversationId}
+        initialMessages={initialMessages}
+      />
 
       {/* 固定在底部的输入框 */}
       <div className="sticky bottom-0 bg-white px-6 pb-6 dark:bg-slate-950">
