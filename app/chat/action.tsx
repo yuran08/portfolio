@@ -1,7 +1,5 @@
 "use server";
 
-import { streamText } from "ai";
-import { deepseek } from "@ai-sdk/deepseek";
 import { db } from "@/lib/redis-adapter";
 import {
   UserMessageWrapper,
@@ -13,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
 import { LoadingWithText } from "./skeleton";
+import { createLLMStream } from "./llm";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -66,25 +65,14 @@ export const getConversationList = async () => {
   return conversations;
 };
 
-// 从流中获取LLM响应
-const getLLMResponseStream = async (
-  messages: Omit<Message, "createAt" | "updateAt">[]
-) => {
-  const { textStream } = streamText({
-    model: deepseek("deepseek-chat"),
-    system: `你是一个专业的AI助手, 服务并所属于yr-chat,请根据用户的问题给出最专业的回答。今天的日期是${new Date().toLocaleDateString()}`,
-    messages,
-  });
-
-  return textStream;
-};
-
 // 根据消息生成LLM响应的React节点
 export const getLLMResponseReactNode = async (
   conversationId: string,
   messages: Omit<Message, "createAt" | "updateAt">[]
 ): Promise<ReactNode> => {
-  const llmReader = (await getLLMResponseStream(messages)).getReader();
+  const { textStream, toolCalls, toolResults } =
+    await createLLMStream(messages);
+  const llmReader = textStream.getReader();
   const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
   const messageId = await db.message
     .create({
@@ -93,6 +81,8 @@ export const getLLMResponseReactNode = async (
       conversationId,
     })
     .then((message) => message.id);
+
+  const wrappedToolResults = createPromiseWithStatus(toolResults);
 
   // 递归式流式渲染组件
   const StreamWithRecursion = async (props: { accumulator?: string }) => {
@@ -121,6 +111,31 @@ export const getLLMResponseReactNode = async (
     );
   };
 
+  const StreamWithToolCalls = async () => {
+    const streamToolCalls = await toolCalls;
+    console.log(streamToolCalls, "*streamToolCalls*");
+
+    if (streamToolCalls.length === 0) {
+      return null;
+    }
+
+    if (wrappedToolResults.isPending) {
+      return (
+        <div>
+          {streamToolCalls.map((toolCall) => (
+            <div key={toolCall.toolCallId}>Tool Call: {toolCall.toolName}</div>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div>Tool Call: done</div>
+      </>
+    );
+  };
+
   return (
     <>
       <UserMessageWrapper>
@@ -128,6 +143,7 @@ export const getLLMResponseReactNode = async (
       </UserMessageWrapper>
       <AssistantMessageWrapper>
         <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
+          <StreamWithToolCalls />
           <StreamWithRecursion />
         </Suspense>
       </AssistantMessageWrapper>
@@ -174,3 +190,26 @@ export const getInitConversationReactNode = async (conversationId: string) => {
     </>
   );
 };
+
+function createPromiseWithStatus<T>(promise: Promise<T>) {
+  let status = "pending";
+
+  const wrappedPromise = promise.then(
+    (value) => {
+      status = "fulfilled";
+      console.log(value, "*toolResults*");
+      return value;
+    },
+    (error) => {
+      status = "rejected";
+      throw error;
+    }
+  );
+
+  return {
+    isPending: status === "pending",
+    isFulfilled: status === "fulfilled",
+    isRejected: status === "rejected",
+    wrappedPromise,
+  };
+}
