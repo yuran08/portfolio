@@ -1,7 +1,6 @@
 import { Suspense } from "react";
-import SideBar from "../../side-bar";
 import ChatPage from "../../chat-page";
-import { SidebarSkeleton, ChatPageSkeleton } from "../../skeleton";
+import { ChatPageSkeleton } from "../../skeleton";
 
 export default async function Conversation({
   params,
@@ -10,15 +9,8 @@ export default async function Conversation({
 }) {
   const { id } = await params;
   return (
-    <>
-      <Suspense fallback={<SidebarSkeleton />}>
-        <SideBar currentConversationId={id} />
-      </Suspense>
-      <main className="flex flex-1 flex-col bg-white dark:bg-slate-950">
-        <Suspense fallback={<ChatPageSkeleton />}>
-          <ChatPage key={id} conversationId={id} />
-        </Suspense>
-      </main>
-    </>
+    <Suspense fallback={<ChatPageSkeleton />}>
+      <ChatPage key={id} conversationId={id} />
+    </Suspense>
   );
 }

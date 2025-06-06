@@ -283,7 +283,7 @@ export const getInitConversationReactNode = async (conversationId: string) => {
                     item.type === "tool-call"
                       ? item.toolName
                       : item.type === "tool-result"
-                        ? (item as ToolResultPart).result.summary
+                        ? ((item as ToolResultPart).result as any).summary
                         : "## 系统错误，请重试"
                   }
                 />
