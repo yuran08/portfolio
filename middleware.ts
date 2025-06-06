@@ -23,6 +23,8 @@ export function middleware(request: NextRequest) {
     const conversationMatch = pathname.match(/\/chat\/conversation\/([^\/]+)/);
     if (conversationMatch) {
       response.headers.set("x-conversation-id", conversationMatch[1]);
+    } else {
+      response.headers.set("x-conversation-id", "new-chat");
     }
 
     // 3.3 预加载highlight.js样式文件

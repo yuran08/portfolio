@@ -4,7 +4,7 @@ import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
 import { HighlightThemeSwitcher } from "./highlight-theme-switcher";
 import { Suspense } from "react";
-import SideBar from "./side-bar";
+import SideBar from "./sidebar/side-bar";
 import { SidebarSkeleton } from "./skeleton";
 import { headers } from "next/headers";
 
@@ -34,7 +34,6 @@ export default async function ChatPageLayout({
   // 从middleware设置的headers获取conversationId
   const headersList = await headers();
   const currentConversationId = headersList.get("x-conversation-id") || undefined;
-  console.log("currentConversationId", currentConversationId);
   return (
     <html lang="en" suppressHydrationWarning>
       {/* 为 Chat 添加 ThemeProvider，默认系统主题，无切换功能 */}
@@ -51,7 +50,7 @@ export default async function ChatPageLayout({
           {/* 通过key强制重新渲染Sidebar */}
           <Suspense fallback={<SidebarSkeleton />}>
             <SideBar
-              key={currentConversationId || 'no-conversation'}
+              key={currentConversationId}
               currentConversationId={currentConversationId}
             />
           </Suspense>

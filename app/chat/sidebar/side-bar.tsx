@@ -1,5 +1,5 @@
-import { getConversationList } from "./action";
-import { DeleteConversationButton } from "./delete-conversation-button";
+import { getConversationList } from "../action";
+import { DeleteConversationButton } from "../delete-conversation-button";
 import { NavigationButton } from "./navigation-button";
 import dayjs from "dayjs";
 // 时间分组类型
