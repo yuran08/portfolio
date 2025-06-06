@@ -5,6 +5,7 @@ import { useTransition } from "react";
 
 interface NavigationButtonProps {
   children: React.ReactNode;
+  disabled?: boolean;
   className?: string;
   conversationId?: string;
 }
@@ -15,6 +16,7 @@ interface NavigationButtonProps {
  */
 export function NavigationButton({
   children,
+  disabled,
   className,
   conversationId
 }: NavigationButtonProps) {
@@ -33,8 +35,8 @@ export function NavigationButton({
   return (
     <button
       onClick={handleClick}
-      disabled={isPending}
-      className={`${className} ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+      disabled={isPending || disabled}
+      className={`${className} ${isPending || disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       {isPending ? (
         <div className="flex items-center space-x-2">
