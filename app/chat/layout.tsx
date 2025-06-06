@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
-import { HighlightPreloader } from "./highlight-preloader";
+import { HighlightThemeSwitcher } from "./highlight-theme-switcher";
 import { Suspense } from "react";
 import SideBar from "./side-bar";
 import { SidebarSkeleton } from "./skeleton";
@@ -48,7 +48,7 @@ export default async function ChatPageLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} flex h-screen bg-white text-black antialiased dark:bg-slate-950 dark:text-slate-100`}
         >
-          <HighlightPreloader />
+          <HighlightThemeSwitcher />
           {/* 将 Sidebar 移到 layout 中，在服务端直接传递 conversationId */}
           <Suspense fallback={<SidebarSkeleton />}>
             <SideBar currentConversationId={currentConversationId} />
