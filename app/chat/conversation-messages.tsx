@@ -11,7 +11,7 @@ export function ConversationMessages({
   conversationId: string;
   initialMessages: ReactNode;
 }) {
-  const messagesRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
   const [messagesNode, setMessagesNode] = useState<ReactNode[]>([
     initialMessages,
   ]);

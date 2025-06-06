@@ -5,13 +5,13 @@ import {
   UserMessageWrapper,
   AssistantMessageWrapper,
   ParseToMarkdown,
-} from "./message";
+} from "./ui/message";
 import { Suspense, ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
-import ParseLLMReaderToMarkdownGenerator from "./parser";
-import { LoadingWithText } from "./skeleton";
-import { createLLMStream } from "./llm";
+import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
+import { LoadingWithText } from "./ui/skeleton";
+import { createLLMStream } from "./lib/llm";
 import { CoreMessage, ToolCallPart, ToolResultPart } from "ai";
 
 // 开始对话

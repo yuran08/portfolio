@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ChatPage from "../../chat-page";
-import { ChatPageSkeleton } from "../../skeleton";
+import { ChatPageSkeleton } from "../../ui/skeleton";
 
 export default async function Conversation({
   params,

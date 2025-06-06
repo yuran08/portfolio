@@ -3,7 +3,7 @@
 import { CoreMessage, streamText, tool } from "ai";
 import { deepseek } from "@ai-sdk/deepseek";
 import { z } from "zod";
-import { webSearchTool } from "./tools/web-search";
+import { webSearchTool } from "../tools/web-search";
 
 // 定义搜索工具的模式
 const searchToolSchema = z.object({

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ChatPage from "./chat-page";
-import { NewChatSkeleton } from "./skeleton";
+import { NewChatSkeleton } from "./ui/skeleton";
 
 export default function Chat() {
   return (

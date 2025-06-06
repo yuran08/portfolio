@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { HighlightThemeSwitcher } from "./highlight-theme-switcher";
 import { Suspense } from "react";
 import SideBar from "./sidebar/side-bar";
-import { SidebarSkeleton } from "./skeleton";
+import { SidebarSkeleton } from "./ui/skeleton";
 import { headers } from "next/headers";
 
 const geistSans = Geist({

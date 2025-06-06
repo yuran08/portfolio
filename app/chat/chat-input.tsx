@@ -13,8 +13,8 @@ export default function ChatInput({
   action?: (formData: FormData) => void | Promise<void>;
   conversationId?: string;
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [isComposing, setIsComposing] = useState(false);
   const router = useRouter();
 

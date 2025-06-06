@@ -8,7 +8,7 @@ import remarkBreaks from "remark-breaks";
 import { useMemo } from "react";
 import { ComponentPropsWithoutRef } from "react";
 import { Sparkles } from "lucide-react";
-import { Message } from "./type";
+import { Message } from "../type";
 
 export const UserMessageWrapper = ({
   children,
