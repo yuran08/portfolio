@@ -12,7 +12,7 @@ import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
 import { LoadingWithText } from "./skeleton";
 import { createLLMStream } from "./llm";
-import { CoreMessage, ToolCallPart, ToolResult, ToolResultPart } from "ai";
+import { CoreMessage, ToolCallPart, ToolResultPart } from "ai";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -276,14 +276,15 @@ export const getInitConversationReactNode = async (conversationId: string) => {
           <AssistantMessageWrapper key={message.id}>
             {(
               message.content as unknown as (ToolCallPart | ToolResultPart)[]
-            ).map((item) => {
+            ).map((item, index) => {
               return (
                 <ParseToMarkdown
+                  key={index}
                   block={
                     item.type === "tool-call"
                       ? item.toolName
                       : item.type === "tool-result"
-                        ? ((item as ToolResultPart).result as any).summary
+                        ? ((item as ToolResultPart).result as { summary?: string }).summary || "工具调用结果"
                         : "## 系统错误，请重试"
                   }
                 />

@@ -56,17 +56,6 @@ export default function ChatInput({
 
   const finalAction = action || defaultAction;
 
-  // 处理搜索请求
-  const handleSearch = async (query: string) => {
-    // 直接发送搜索请求，让AI自动调用搜索工具
-    const searchMessage = `帮我搜索关于"${query}"的最新信息`;
-
-    // 创建FormData并提交
-    const formData = new FormData();
-    formData.append("message", searchMessage);
-    await finalAction(formData);
-  };
-
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto"; // Reset height to recalculate

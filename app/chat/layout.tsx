@@ -6,6 +6,7 @@ import { HighlightThemeSwitcher } from "./highlight-theme-switcher";
 import { Suspense } from "react";
 import SideBar from "./side-bar";
 import { SidebarSkeleton } from "./skeleton";
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,17 +26,15 @@ export const metadata: Metadata = {
 // 定义layout的props类型
 interface ChatLayoutProps {
   children: React.ReactNode;
-  params: Promise<{ id?: string }>;
 }
 
 export default async function ChatPageLayout({
   children,
-  params,
 }: ChatLayoutProps) {
-  // 解析params以获取conversationId
-  const resolvedParams = await params;
-  const currentConversationId = resolvedParams?.id;
-
+  // 从middleware设置的headers获取conversationId
+  const headersList = await headers();
+  const currentConversationId = headersList.get("x-conversation-id") || undefined;
+  console.log("currentConversationId", currentConversationId);
   return (
     <html lang="en" suppressHydrationWarning>
       {/* 为 Chat 添加 ThemeProvider，默认系统主题，无切换功能 */}
@@ -49,9 +48,12 @@ export default async function ChatPageLayout({
           className={`${geistSans.variable} ${geistMono.variable} flex h-screen bg-white text-black antialiased dark:bg-slate-950 dark:text-slate-100`}
         >
           <HighlightThemeSwitcher />
-          {/* 将 Sidebar 移到 layout 中，在服务端直接传递 conversationId */}
+          {/* 通过key强制重新渲染Sidebar */}
           <Suspense fallback={<SidebarSkeleton />}>
-            <SideBar currentConversationId={currentConversationId} />
+            <SideBar
+              key={currentConversationId || 'no-conversation'}
+              currentConversationId={currentConversationId}
+            />
           </Suspense>
           {/* 主内容区域 */}
           <main className="flex flex-1 flex-col bg-white dark:bg-slate-950">
