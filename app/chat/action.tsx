@@ -12,7 +12,7 @@ import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./parser";
 import { LoadingWithText } from "./skeleton";
 import { createLLMStream } from "./llm";
-import { CoreMessage, ToolResult, ToolResultPart } from "ai";
+import { CoreMessage, ToolCallPart, ToolResult, ToolResultPart } from "ai";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -267,31 +267,28 @@ export const getInitConversationReactNode = async (conversationId: string) => {
           <UserMessageWrapper key={message.id}>
             {message.content as string}
           </UserMessageWrapper>
-        ) : message.role === "assistant" ? (
+        ) : message.role === "assistant" &&
+          typeof message.content === "string" ? (
           <AssistantMessageWrapper key={message.id}>
             <ParseToMarkdown block={message.content || "## 系统错误，请重试"} />
           </AssistantMessageWrapper>
         ) : (
           <AssistantMessageWrapper key={message.id}>
-            {(function () {
+            {(
+              message.content as unknown as (ToolCallPart | ToolResultPart)[]
+            ).map((item) => {
               return (
                 <ParseToMarkdown
                   block={
-                    (message.content as unknown as ToolResultPart[])?.[0]
-                      ?.toolName || "## 系统错误，请重试"
+                    item.type === "tool-call"
+                      ? item.toolName
+                      : item.type === "tool-result"
+                        ? (item as ToolResultPart).result.summary
+                        : "## 系统错误，请重试"
                   }
                 />
               );
-            })()}
-            {/* <ParseToMarkdown
-              block={
-                (
-                  JSON.parse(
-                    JSON.stringify(message.content)
-                  )?.[0] as unknown as ToolResultPart
-                ).toolName || "## 系统错误，请重试"
-              }
-            /> */}
+            })}
           </AssistantMessageWrapper>
         )
       )}
