@@ -32,6 +32,7 @@ const systemPrompt = `你是一个专业的AI助手，隶属于yr-chat。今天�
  * 创建带工具的LLM流式响应
  */
 export const createLLMStream = async (messages: CoreMessage[]) => {
+  console.log(messages, "*createLLMStream messages*");
   const llm = streamText({
     model: deepseek("deepseek-chat"),
     system: systemPrompt,

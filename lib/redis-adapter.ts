@@ -4,15 +4,14 @@ import {
   RedisMessage,
   RedisConversation,
 } from "./redis-store";
+import { CoreMessage } from "ai";
 
 // 适配器类型定义，与 Prisma 模型兼容
-export interface Message {
+export interface Message extends Omit<CoreMessage, "id"> {
   id: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: Date;
-  updatedAt: Date;
-  conversationId: string;
+  conversationId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Conversation {
@@ -25,10 +24,17 @@ export interface Conversation {
 
 // Redis 到应用模型的转换函数
 function redisMessageToMessage(redisMessage: RedisMessage): Message {
+  const content =
+    redisMessage.role === "tool" ||
+    (redisMessage.content as string).startsWith("{") ||
+    (redisMessage.content as string).startsWith("[")
+      ? JSON.parse(redisMessage.content as string)
+      : (redisMessage.content as string);
+
   return {
     id: redisMessage.id,
     role: redisMessage.role,
-    content: redisMessage.content,
+    content,
     createdAt: new Date(redisMessage.createdAt),
     updatedAt: new Date(redisMessage.updatedAt),
     conversationId: redisMessage.conversationId,
@@ -51,8 +57,8 @@ export class RedisAdapter {
   // 消息相关操作
   static message = {
     async create(data: {
-      content: string;
-      role: "user" | "assistant";
+      content: Message["content"];
+      role: "user" | "assistant" | "tool";
       conversationId: string;
     }): Promise<Message> {
       const redisMessage = await MessageStore.create(data);
@@ -72,7 +78,7 @@ export class RedisAdapter {
 
     async update(
       id: string,
-      data: { content?: string }
+      data: { content?: Message["content"] }
     ): Promise<Message | null> {
       const redisMessage = await MessageStore.update(id, data);
       return redisMessage ? redisMessageToMessage(redisMessage) : null;

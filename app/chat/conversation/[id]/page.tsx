@@ -16,7 +16,7 @@ export default async function Conversation({
       </Suspense>
       <main className="flex flex-1 flex-col bg-white dark:bg-slate-950">
         <Suspense fallback={<ChatPageSkeleton />}>
-          <ChatPage conversationId={id} />
+          <ChatPage key={id} conversationId={id} />
         </Suspense>
       </main>
     </>

@@ -1,11 +1,12 @@
 import redis, { generateRedisKey, REDIS_KEYS } from "./redis";
 import { v4 as uuidv4 } from "uuid";
+import { Message } from "./redis-adapter";
 
 // 数据类型定义
 export interface RedisMessage {
   id: string;
-  role: "user" | "assistant";
-  content: string;
+  role: "user" | "assistant" | "tool";
+  content: Message["content"];
   createdAt: string;
   updatedAt: string;
   conversationId: string;
@@ -27,8 +28,8 @@ const isValidRedisData = (data: unknown): data is Record<string, unknown> => {
 export class MessageStore {
   // 创建消息
   static async create(data: {
-    content: string;
-    role: "user" | "assistant";
+    content: Message["content"];
+    role: "user" | "assistant" | "tool";
     conversationId: string;
   }): Promise<RedisMessage> {
     const messageId = uuidv4();
@@ -120,7 +121,7 @@ export class MessageStore {
   // 更新消息
   static async update(
     id: string,
-    data: { content?: string }
+    data: { content?: Message["content"] }
   ): Promise<RedisMessage | null> {
     const existingMessage = await this.findById(id);
     if (!existingMessage) {

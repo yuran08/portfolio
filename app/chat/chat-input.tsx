@@ -5,7 +5,6 @@ import { useRef, useEffect, useState } from "react";
 import RenderFormPending from "./render-form-pending";
 import { startConversation } from "./action";
 import { useRouter } from "next/navigation";
-import { SearchButton } from "./search-button";
 
 export default function ChatInput({
   action,
@@ -120,16 +119,7 @@ export default function ChatInput({
         onCompositionStart={() => setIsComposing(true)}
         onCompositionEnd={() => setIsComposing(false)}
       />
-      <div className="flex items-center justify-between">
-        {/* 左侧：搜索按钮 */}
-        <div className="flex items-center gap-2">
-          <SearchButton onSearch={handleSearch} />
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            支持联网搜索最新信息
-          </span>
-        </div>
-
-        {/* 右侧：发送按钮 */}
+      <div className="flex items-center justify-end">
         <button
           type="submit"
           className="flex items-center justify-center rounded-full bg-blue-500 p-2 text-white transition-colors duration-200 hover:bg-blue-600 dark:bg-indigo-600 dark:hover:bg-indigo-500"

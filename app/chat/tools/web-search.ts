@@ -324,9 +324,9 @@ export const fetchWebContent = async (url: string): Promise<string> => {
       .trim();
 
     // 限制内容长度
-    if (content.length > 3000) {
-      content = content.substring(0, 3000) + "...";
-    }
+    // if (content.length > 3000) {
+    //   content = content.substring(0, 3000) + "...";
+    // }
 
     return content;
   } catch (error) {

@@ -8,6 +8,7 @@ import remarkBreaks from "remark-breaks";
 import { useMemo } from "react";
 import { ComponentPropsWithoutRef } from "react";
 import { Sparkles } from "lucide-react";
+import { Message } from "./type";
 
 export const UserMessageWrapper = ({
   children,
@@ -48,7 +49,7 @@ export const ParseToMarkdown = ({
   block,
   "data-message-id": messageId,
 }: {
-  block: string;
+  block: Message["content"];
   "data-message-id"?: string;
 }) => {
   // 缓存组件配置，避免重复创建
@@ -267,7 +268,7 @@ export const ParseToMarkdown = ({
         // 确保正确处理换行
         skipHtml={false}
       >
-        {block}
+        {block as string}
       </ReactMarkdown>
     </div>
   );

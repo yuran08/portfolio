@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     reactCompiler: true,
     viewTransition: true,
   },
+  reactStrictMode: false,
 };
 
 export default nextConfig;

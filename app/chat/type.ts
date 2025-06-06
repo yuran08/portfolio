@@ -1,10 +1,11 @@
-export type Message = {
+import { CoreMessage } from "ai";
+
+export interface Message extends Omit<CoreMessage, "id"> {
   id: string;
-  role: "user" | "assistant";
-  content: string;
-  createAt: Date;
-  updateAt: Date;
-};
+  conversationId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export type Conversation = {
   id: string;
