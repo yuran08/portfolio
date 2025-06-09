@@ -14,9 +14,9 @@ export const aiTools = {
 } as const;
 
 // 导出工具类型和接口
-export type { SearchResponse, SearchResult } from "./web-search";
+export type { TavilySearchResponse, TavilySearchOptions } from "@tavily/core";
 export type { calculatorToolSchema } from "./calculator";
 
 // 导出格式化方法（从各工具文件中重新导出）
-export { formatSearchResultsToMarkdown } from "./web-search";
 export { formatCalculationResultToMarkdown } from "./calculator";
+export { formatSearchResultsToMarkdown } from "./web-search";
