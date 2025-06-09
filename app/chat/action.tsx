@@ -147,8 +147,7 @@ export const getLLMResponseReactNode = async (
       const result = await toolResultsPromise.wrappedPromise;
       const llmResponseReactNode = await addToolResultForNextMessage(
         conversationId,
-        result,
-        toolName
+        result
       );
       return llmResponseReactNode;
     }
@@ -161,10 +160,10 @@ export const getLLMResponseReactNode = async (
       <UserMessageWrapper>
         {messages[messages.length - 1].content as string}
       </UserMessageWrapper>
+      <Suspense fallback={null}>
+        <StreamWithToolCalls promise={wrappedToolResults} />
+      </Suspense>
       <AssistantMessageWrapper>
-        <Suspense fallback={null}>
-          <StreamWithToolCalls promise={wrappedToolResults} />
-        </Suspense>
         <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
           <StreamWithRecursion />
         </Suspense>
@@ -176,8 +175,7 @@ export const getLLMResponseReactNode = async (
 // 获取工具调用结果
 export const addToolResultForNextMessage = async (
   conversationId: string,
-  content: Message["content"],
-  toolName: string
+  content: Message["content"]
 ) => {
   await db.message.create({
     content: JSON.stringify(content),
@@ -231,13 +229,21 @@ export const addToolResultForNextMessage = async (
 
   return (
     <>
-      <div>Tool Call: {toolName} done</div>
-      <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
-        <StreamWithRecursion />
-      </Suspense>
+      <ToolMessageWrapper>
+        <ParseToMarkdown
+          block={formatToolResult(
+            (content as ToolResultPart[])[0].toolName,
+            (content as ToolResultPart[])[0].result
+          )}
+        />
+      </ToolMessageWrapper>
+      <AssistantMessageWrapper>
+        <Suspense fallback={<LoadingWithText text="正在等待工具调用结果..." />}>
+          <StreamWithRecursion />
+        </Suspense>
+      </AssistantMessageWrapper>
     </>
   );
-  // revalidatePath(`/chat/conversation/${conversationId}`);
 };
 
 // 获取初始对话的React节点

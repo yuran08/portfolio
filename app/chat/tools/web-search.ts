@@ -129,19 +129,6 @@ export const webSearchAITool = tool({
     days,
     time_range,
   }) => {
-    console.log("🔍 AI调用Tavily搜索工具:", {
-      query,
-      search_depth,
-      topic,
-      max_results,
-      include_raw_content,
-      include_answer,
-      include_images,
-      country,
-      days,
-      time_range,
-    });
-
     try {
       const searchOptions: Partial<TavilySearchOptions> = {
         searchDepth: search_depth,
@@ -238,29 +225,29 @@ export const formatSearchResultsToMarkdown = (
         markdown += `📅 发布时间: ${result.publishedDate}\n\n`;
       }
 
-      if (
-        result.rawContent &&
-        result.rawContent !== result.content &&
-        result.rawContent.length > result.content.length
-      ) {
-        markdown += `<details>\n<summary>查看完整内容</summary>\n\n${result.rawContent}\n\n</details>\n\n`;
-      }
+      // if (
+      //   result.rawContent &&
+      //   result.rawContent !== result.content &&
+      //   result.rawContent.length > result.content.length
+      // ) {
+      //   markdown += `<details>\n<summary>查看完整内容</summary>\n\n${result.rawContent}\n\n</details>\n\n`;
+      // }
 
       markdown += "---\n\n";
     }
   );
 
-  if (searchResponse.images && searchResponse.images.length > 0) {
-    markdown += `### 🖼️ 相关图片\n\n`;
-    searchResponse.images
-      .slice(0, 3)
-      .forEach((image: TavilyImage, index: number) => {
-        markdown += `![图片 ${index + 1}${image.description ? `: ${image.description}` : ""}](${image.url})\n\n`;
-      });
-  }
+  // if (searchResponse.images && searchResponse.images.length > 0) {
+  //   markdown += `### 🖼️ 相关图片\n\n`;
+  //   searchResponse.images
+  //     .slice(0, 3)
+  //     .forEach((image: TavilyImage, index: number) => {
+  //       markdown += `![图片 ${index + 1}${image.description ? `: ${image.description}` : ""}](${image.url})\n\n`;
+  //     });
+  // }
 
   if (searchResponse.responseTime) {
-    markdown += `\n*搜索用时: ${searchResponse.responseTime}ms*\n`;
+    markdown += `\n*搜索用时: ${searchResponse.responseTime}s*\n`;
   }
 
   return markdown;
