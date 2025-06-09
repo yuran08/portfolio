@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 /**
@@ -15,7 +14,6 @@ export async function navigateToConversation(conversationId: string) {
  * 导航到chat首页并清除缓存
  */
 export async function navigateToChat() {
-
   // 重定向到chat首页
   redirect("/chat");
-} 
+}
