@@ -20,7 +20,6 @@ export default function GetInitResponse({
     const fetchResponse = async () => {
       try {
         setIsLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 10000));
         setError(null);
 
         const llmResponseReactNode = await getLLMResponseReactNode(

@@ -254,7 +254,11 @@ export const getInitConversationReactNode = async (conversationId: string) => {
 
   if (messages.length === 1)
     return (
-      <GetInitResponse conversationId={conversationId} messages={messages} />
+      <GetInitResponse
+        key={conversationId}
+        conversationId={conversationId}
+        messages={messages}
+      />
     );
 
   return (
