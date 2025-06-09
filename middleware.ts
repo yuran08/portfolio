@@ -11,7 +11,6 @@ export function middleware(request: NextRequest) {
 
   // 2. Chat路由专用逻辑
   if (pathname.startsWith("/chat")) {
-
     // 2.1 提取conversationId（如果存在）
     const conversationMatch = pathname.match(/\/chat\/conversation\/([^\/]+)/);
     if (conversationMatch) {
@@ -23,7 +22,7 @@ export function middleware(request: NextRequest) {
     // 2.2 预加载highlight.js样式文件
     const highlightPreloads = [
       "</highlight.js/styles/github.css>; rel=preload; as=style; media=screen",
-      "</highlight.js/styles/github-dark.css>; rel=preload; as=style; media=screen"
+      "</highlight.js/styles/github-dark.css>; rel=preload; as=style; media=screen",
     ];
 
     response.headers.set("Link", highlightPreloads.join(", "));

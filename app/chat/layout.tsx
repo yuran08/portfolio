@@ -28,14 +28,22 @@ interface ChatLayoutProps {
   children: React.ReactNode;
 }
 
-export default async function ChatPageLayout({
-  children,
-}: ChatLayoutProps) {
+export default async function ChatPageLayout({ children }: ChatLayoutProps) {
   // 从middleware设置的headers获取conversationId
   const headersList = await headers();
-  const currentConversationId = headersList.get("x-conversation-id") || undefined;
+  const currentConversationId =
+    headersList.get("x-conversation-id") || undefined;
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* KaTeX CSS - 数学公式渲染必需 */}
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
+          integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP"
+          crossOrigin="anonymous"
+        />
+      </head>
       {/* 为 Chat 添加 ThemeProvider，默认系统主题，无切换功能 */}
       <ThemeProvider
         attribute="class"

@@ -300,3 +300,93 @@
   padding: 0.25rem 0.5rem;
   border: 1px solid rgba(156, 163, 175, 0.3);
 }
+
+/* KaTeX 数学公式样式优化 */
+/* 行内数学公式 */
+.katex {
+  font-size: 1em !important;
+  line-height: 1.2;
+  /* 平滑的主题切换过渡 */
+  transition: color 0.15s ease;
+}
+
+/* 块级数学公式 */
+.katex-display {
+  margin: 1em 0 !important;
+  text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* 确保长公式可以水平滚动 */
+  white-space: nowrap;
+}
+
+/* 深色模式下的数学公式优化 */
+.dark .katex {
+  color: #e2e8f0 !important;
+}
+
+.dark .katex .base {
+  color: #e2e8f0 !important;
+}
+
+/* 数学公式的滚动条样式 */
+.katex-display::-webkit-scrollbar {
+  height: 6px;
+}
+
+.katex-display::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+  border-radius: 3px;
+}
+
+.katex-display::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600;
+  border-radius: 3px;
+}
+
+.katex-display::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* 响应式数学公式 */
+@media (max-width: 768px) {
+  .katex-display {
+    font-size: 0.9em;
+    margin: 0.8em 0 !important;
+  }
+  
+  .katex {
+    font-size: 0.9em !important;
+  }
+}
+
+/* 数学公式与周围文本的间距优化 */
+.prose p .katex {
+  margin: 0 0.1em;
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .katex {
+    font-weight: 600;
+  }
+  
+  .katex-display {
+    border: 1px solid currentColor;
+    padding: 0.5em;
+    border-radius: 4px;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .katex-display,
+  .katex {
+    color: #000 !important;
+    background: transparent !important;
+  }
+  
+  .katex-display {
+    page-break-inside: avoid;
+  }
+}
