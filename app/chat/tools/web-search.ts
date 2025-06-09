@@ -194,8 +194,6 @@ export const formatSearchResultsToMarkdown = (
         responseTime?: number;
       }
 ): string => {
-  console.log("🔍 格式化搜索结果:", searchResponse);
-
   // 处理工具返回的格式
   if ("success" in searchResponse) {
     if (!searchResponse.success) {
@@ -215,10 +213,6 @@ export const formatSearchResultsToMarkdown = (
   }
 
   let markdown = `## 🌐 网络搜索结果\n\n`;
-
-  if (searchResponse.answer) {
-    markdown += `### 🤖 AI摘要\n\n${searchResponse.answer}\n\n`;
-  }
 
   if (searchResponse.results.length === 0) {
     markdown += "暂无搜索结果。\n\n";

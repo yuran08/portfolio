@@ -4,6 +4,7 @@ import { db } from "@/lib/redis-adapter";
 import {
   UserMessageWrapper,
   AssistantMessageWrapper,
+  ToolMessageWrapper,
   ParseToMarkdown,
 } from "./ui/message";
 import { Suspense, ReactNode } from "react";
@@ -12,8 +13,9 @@ import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
 import { LoadingWithText } from "./ui/skeleton";
 import { createLLMStream } from "./lib/llm";
-import { CoreMessage, ToolCallPart, ToolResultPart } from "ai";
+import { CoreMessage, ToolResultPart } from "ai";
 import GetInitResponse from "./get-init-response";
+import { formatToolResult } from "./tools";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -263,41 +265,50 @@ export const getInitConversationReactNode = async (conversationId: string) => {
 
   return (
     <>
-      {messages.map((message) =>
-        message.role === "user" ? (
-          <UserMessageWrapper key={message.id}>
-            {message.content as string}
-          </UserMessageWrapper>
-        ) : message.role === "assistant" &&
-          typeof message.content === "string" ? (
-          <AssistantMessageWrapper key={message.id}>
-            <ParseToMarkdown block={message.content || "## 系统错误，请重试"} />
-          </AssistantMessageWrapper>
-        ) : (
-          <AssistantMessageWrapper key={message.id}>
-            {(
-              message.content as unknown as (ToolCallPart | ToolResultPart)[]
-            ).map((item, index) => {
-              return (
-                <ParseToMarkdown
-                  key={index}
-                  block={
-                    item.type === "tool-call"
-                      ? item.toolName
-                      : item.type === "tool-result"
-                        ? (
-                            (item as ToolResultPart).result as {
-                              summary?: string;
-                            }
-                          ).summary || "工具调用结果"
-                        : "## 系统错误，请重试"
-                  }
-                />
-              );
-            })}
-          </AssistantMessageWrapper>
-        )
-      )}
+      {messages.map((message) => {
+        if (message.role === "user") {
+          return (
+            <UserMessageWrapper key={message.id}>
+              {message.content as string}
+            </UserMessageWrapper>
+          );
+        }
+
+        if (
+          message.role === "assistant" &&
+          typeof message.content === "string"
+        ) {
+          return (
+            <AssistantMessageWrapper key={message.id}>
+              <ParseToMarkdown
+                block={message.content || "## 系统错误，请重试"}
+              />
+            </AssistantMessageWrapper>
+          );
+        }
+
+        // 处理工具消息
+        if (message.role === "tool") {
+          const tools = message.content as unknown as ToolResultPart[];
+
+          // 只有当有工具结果时才渲染 ToolMessageWrapper
+          if (tools.length > 0) {
+            return (
+              <ToolMessageWrapper key={message.id}>
+                {tools.map((item, index) => (
+                  <ParseToMarkdown
+                    key={`${item.toolName}-${index}`}
+                    block={formatToolResult(item.toolName, item.result)}
+                  />
+                ))}
+              </ToolMessageWrapper>
+            );
+          }
+        }
+
+        // 如果没有匹配的类型，返回 null
+        return null;
+      })}
     </>
   );
 };

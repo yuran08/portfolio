@@ -2,13 +2,91 @@
 
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
 import remarkBreaks from "remark-breaks";
 import { useMemo } from "react";
 import { ComponentPropsWithoutRef } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Wrench } from "lucide-react";
 import { Message } from "../type";
+// KaTeX CSS is now loaded via CDN in layout.tsx
+
+/**
+ * 预处理LaTeX内容，将各种格式的数学公式转换为remark-math支持的美元符号格式
+ * 基于 https://github.com/remarkjs/react-markdown/issues/785 中的讨论
+ */
+function preprocessLaTeX(content: string) {
+  // 步骤1: 保护代码块
+  const codeBlocks: string[] = [];
+  let processedContent = content.replace(
+    /(`{3,}[\s\S]*?`{3,}|`[^`\n]+`)/g,
+    (match, code) => {
+      codeBlocks.push(code);
+      return `<<CODE_BLOCK_${codeBlocks.length - 1}>>`;
+    }
+  );
+
+  // 步骤2: 保护现有的LaTeX表达式
+  const latexExpressions: string[] = [];
+  processedContent = processedContent.replace(
+    /(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g,
+    (match) => {
+      latexExpressions.push(match);
+      return `<<LATEX_${latexExpressions.length - 1}>>`;
+    }
+  );
+
+  // 步骤3: 转换反斜杠分隔符到美元符号
+  // 块级公式: \[ ... \] 转换为 $$ ... $$
+  processedContent = processedContent.replace(
+    /\\\[([\s\S]*?)\\\]/g,
+    (match, content) => {
+      return `$$${content}$$`;
+    }
+  );
+
+  // 行内公式: \( ... \) 转换为 $ ... $
+  // 修复：使用更严格的匹配，避免跨行匹配和包含中文字符
+  processedContent = processedContent.replace(
+    /\\\(([^)]*?)\\\)/g,
+    (match, content) => {
+      // 如果内容包含中文字符或者太长，很可能不是数学公式
+      if (/[\u4e00-\u9fff]/.test(content) || content.length > 100) {
+        return match; // 保持原样，不转换
+      }
+      return `$${content}$`;
+    }
+  );
+
+  // 步骤4: 恢复LaTeX表达式
+  processedContent = processedContent.replace(
+    /<<LATEX_(\d+)>>/g,
+    (_, index) => latexExpressions[parseInt(index)]
+  );
+
+  // 步骤5: 恢复代码块
+  processedContent = processedContent.replace(
+    /<<CODE_BLOCK_(\d+)>>/g,
+    (_, index) => codeBlocks[parseInt(index)]
+  );
+
+  return processedContent;
+}
+// export const preprocessLaTeX = (content: string) => {
+//   // Replace block-level LaTeX delimiters \[ \] with $$ $$
+
+//   const blockProcessedContent = content.replace(
+//     /\\\[(.*?)\\\]/gs,
+//     (_, equation) => `$$${equation}$$`
+//   );
+//   // Replace inline LaTeX delimiters \( \) with $ $
+//   const inlineProcessedContent = blockProcessedContent.replace(
+//     /\\\((.*?)\\\)/gs,
+//     (_, equation) => `$${equation}$`
+//   );
+//   return inlineProcessedContent;
+// };
 
 export const UserMessageWrapper = ({
   children,
@@ -36,6 +114,27 @@ export const AssistantMessageWrapper = ({
           <Sparkles size={16} />
         </div>
         <div className="min-w-0 flex-1 rounded-2xl bg-gray-50 px-4 py-3 shadow-sm dark:bg-slate-800/80">
+          <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ToolMessageWrapper = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  return (
+    <div className="my-6 flex justify-start">
+      <div className="flex w-full max-w-full items-start gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white">
+          <Wrench size={16} />
+        </div>
+        <div className="min-w-0 flex-1 rounded-2xl bg-orange-50 px-4 py-3 shadow-sm dark:bg-orange-800/40">
           <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
             {children}
           </div>
@@ -254,12 +353,13 @@ export const ParseToMarkdown = ({
     }),
     []
   );
-
+  console.log(block);
   return (
     <div className="markdown-content">
       <ReactMarkdown
         remarkPlugins={[
           remarkGfm,
+          remarkMath, // 处理数学公式
           remarkBreaks, // 支持软换行
         ]}
         rehypePlugins={[rehypeHighlight, rehypeKatex]}
@@ -268,7 +368,7 @@ export const ParseToMarkdown = ({
         // 确保正确处理换行
         skipHtml={false}
       >
-        {block as string}
+        {preprocessLaTeX(block as string)}
       </ReactMarkdown>
     </div>
   );
