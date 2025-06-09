@@ -13,6 +13,7 @@ import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
 import { LoadingWithText } from "./ui/skeleton";
 import { createLLMStream } from "./lib/llm";
 import { CoreMessage, ToolCallPart, ToolResultPart } from "ai";
+import GetInitResponse from "./get-init-response";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -252,13 +253,9 @@ export const getInitConversationReactNode = async (conversationId: string) => {
     );
 
   if (messages.length === 1)
-    return await getLLMResponseReactNode(conversationId, [
-      {
-        id: messages[0].id,
-        role: "user",
-        content: messages[0].content,
-      },
-    ]);
+    return (
+      <GetInitResponse conversationId={conversationId} messages={messages} />
+    );
 
   return (
     <>
@@ -284,7 +281,11 @@ export const getInitConversationReactNode = async (conversationId: string) => {
                     item.type === "tool-call"
                       ? item.toolName
                       : item.type === "tool-result"
-                        ? ((item as ToolResultPart).result as { summary?: string }).summary || "工具调用结果"
+                        ? (
+                            (item as ToolResultPart).result as {
+                              summary?: string;
+                            }
+                          ).summary || "工具调用结果"
                         : "## 系统错误，请重试"
                   }
                 />
