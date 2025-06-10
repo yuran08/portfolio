@@ -46,7 +46,10 @@ function redisMessageToMessage(redisMessage: RedisMessage): Message {
   return {
     id: redisMessage.id,
     role: redisMessage.role,
-    content: redisMessage.content,
+    content:
+      typeof redisMessage.content === "number"
+        ? String(redisMessage.content)
+        : redisMessage.content,
     conversationId: redisMessage.conversationId,
     createdAt: new Date(redisMessage.createdAt),
     updatedAt: new Date(redisMessage.updatedAt),

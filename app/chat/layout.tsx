@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import SideBar from "./sidebar/side-bar";
 import { SidebarSkeleton } from "./ui/skeleton";
 import { headers } from "next/headers";
+import { getConversationList } from "./action";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,8 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
   const headersList = await headers();
   const currentConversationId =
     headersList.get("x-conversation-id") || undefined;
+  const conversations = await getConversationList();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -60,6 +63,7 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
             <SideBar
               key={currentConversationId}
               currentConversationId={currentConversationId}
+              conversations={conversations}
             />
           </Suspense>
           {/* 主内容区域 */}

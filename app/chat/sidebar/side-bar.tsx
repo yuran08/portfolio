@@ -1,5 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { getConversationList } from "../action";
-import { DeleteConversationButton } from "../delete-conversation-button";
+import { DeleteConversationButton } from "./delete-conversation-button";
 import { NavigationButton } from "./navigation-button";
 import dayjs from "dayjs";
 // 时间分组类型
@@ -44,7 +47,7 @@ const groupConversationsByTime = (
 ): TimeGroup[] => {
   const groups = new Map<string, TimeGroup>();
 
-  conversations.forEach((conversation) => {
+  conversations?.forEach((conversation) => {
     const groupTitle = getTimeGroupTitle(conversation.updatedAt);
 
     if (!groups.has(groupTitle)) {
@@ -78,19 +81,26 @@ const groupConversationsByTime = (
   return sortedGroups;
 };
 
-export default async function ServerSideBar({
+export default function ServerSideBar({
   currentConversationId,
+  conversations,
 }: {
   currentConversationId?: string;
+  conversations: any;
 }) {
-  const conversations = await getConversationList();
+  const [activeConversationId, setActiveConversationId] = useState(
+    currentConversationId
+  );
   const groupedConversations = groupConversationsByTime(conversations);
 
   return (
     <aside className="flex w-72 flex-col space-y-4 border-r border-gray-200 bg-white p-4 dark:border-slate-700/50 dark:bg-slate-900/95">
       <NavigationButton
-        disabled={currentConversationId === "new-chat"}
+        disabled={activeConversationId === "new-chat"}
         className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+        onNavigation={() => {
+          setActiveConversationId("new-chat");
+        }}
       >
         <span>&#x270E;</span>
         <span>开启新对话</span>
@@ -109,10 +119,13 @@ export default async function ServerSideBar({
               {group.conversations.map((conversation) => (
                 <div key={conversation.id} className="group relative">
                   <NavigationButton
-                    disabled={conversation.id === currentConversationId}
+                    disabled={conversation.id === activeConversationId}
                     conversationId={conversation.id}
+                    onNavigation={() =>
+                      setActiveConversationId(conversation.id)
+                    }
                     className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${
-                      conversation.id === currentConversationId
+                      conversation.id === activeConversationId
                         ? "bg-gray-200 dark:bg-slate-800/90"
                         : ""
                     }`}

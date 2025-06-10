@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2, Loader2 } from "lucide-react";
-import { deleteConversation } from "./action";
+import { deleteConversation } from "../action";
 import { useFormStatus } from "react-dom";
 import { useRouter, usePathname } from "next/navigation";
 

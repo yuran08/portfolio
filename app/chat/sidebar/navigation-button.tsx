@@ -1,13 +1,14 @@
 "use client";
 
-import { navigateToConversation, navigateToChat } from "./navigation-action";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 interface NavigationButtonProps {
   children: React.ReactNode;
   disabled?: boolean;
   className?: string;
   conversationId?: string;
+  onNavigation: () => void;
 }
 
 /**
@@ -18,16 +19,19 @@ export function NavigationButton({
   children,
   disabled,
   className,
-  conversationId
+  conversationId,
+  onNavigation,
 }: NavigationButtonProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleClick = () => {
     startTransition(async () => {
+      onNavigation();
       if (conversationId) {
-        await navigateToConversation(conversationId);
+        router.push(`/chat/conversation/${conversationId}`);
       } else {
-        await navigateToChat();
+        router.push("/chat");
       }
     });
   };
@@ -36,11 +40,11 @@ export function NavigationButton({
     <button
       onClick={handleClick}
       disabled={isPending || disabled}
-      className={`${className} ${isPending || disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`${className} ${isPending || disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
     >
       {isPending ? (
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
           <span>加载中...</span>
         </div>
       ) : (
@@ -48,4 +52,4 @@ export function NavigationButton({
       )}
     </button>
   );
-} 
+}

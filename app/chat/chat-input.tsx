@@ -21,8 +21,10 @@ export default function ChatInput({
 
   // 默认的处理函数
   const startConversationAction = async (formData: FormData) => {
-    const message = (formData.get("message") as string)?.trim();
+    const message = String(formData.get("message"))?.trim();
     if (!message) return;
+
+    console.log(typeof message, "message");
 
     if (isSendMessage.current) return;
     isSendMessage.current = true;

@@ -56,8 +56,9 @@ export const conversationAddMessage = async (
     role: "user",
     conversationId,
   });
-  revalidatePath(`/chat/conversation/${conversationId}`);
   const messages = await db.message.findByConversationId(conversationId);
+  revalidatePath(`/chat`);
+  revalidatePath(`/chat/conversation/${conversationId}`);
   const llmResponseReactNode = await getLLMResponseReactNode(
     conversationId,
     messages
