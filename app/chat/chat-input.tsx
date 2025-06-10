@@ -16,45 +16,23 @@ export default function ChatInput({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isComposing, setIsComposing] = useState(false);
+  const isSendMessage = useRef(false);
   const router = useRouter();
 
   // 默认的处理函数
-  const defaultAction = async (formData: FormData) => {
+  const startConversationAction = async (formData: FormData) => {
     const message = (formData.get("message") as string)?.trim();
     if (!message) return;
-    // 清空输入框
-    if (textareaRef.current) {
-      textareaRef.current.value = "";
-      adjustTextareaHeight();
-    }
-    if (conversationId) {
-      // 如果有 conversationId，添加消息到现有对话
-      if (
-        (
-          window as unknown as {
-            addMessageToConversation?: (message: string) => Promise<void>;
-          }
-        ).addMessageToConversation
-      ) {
-        await (
-          window as unknown as {
-            addMessageToConversation: (message: string) => Promise<void>;
-          }
-        ).addMessageToConversation(message);
-        // 清空输入框
-        if (textareaRef.current) {
-          textareaRef.current.value = "";
-          adjustTextareaHeight();
-        }
-      }
-    } else {
-      // 如果没有 conversationId，创建新对话
-      const conversationList = await startConversation(message);
-      router.push(`/chat/conversation/${conversationList[0].id}`);
-    }
+
+    if (isSendMessage.current) return;
+    isSendMessage.current = true;
+
+    const conversationList = await startConversation(message);
+    isSendMessage.current = false;
+    router.push(`/chat/conversation/${conversationList[0].id}`);
   };
 
-  const finalAction = action || defaultAction;
+  const finalAction = action || startConversationAction;
 
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
