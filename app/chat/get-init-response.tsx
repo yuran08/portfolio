@@ -3,6 +3,8 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { getLLMResponseReactNode } from "./action";
 import { Message } from "./type";
+import { UserMessageWrapper, AssistantMessageWrapper } from "./ui/message";
+import { LoadingWithText } from "./ui/skeleton";
 
 export default function GetInitResponse({
   conversationId,
@@ -52,9 +54,12 @@ export default function GetInitResponse({
   // 显示加载状态
   if (isLoading) {
     return (
-      <div className="flex h-full animate-pulse items-center justify-center text-center text-gray-500">
-        正在生成响应...
-      </div>
+      <>
+        <UserMessageWrapper>{messages[0].content as string}</UserMessageWrapper>
+        <AssistantMessageWrapper>
+          <LoadingWithText text="AI 正在思考..." />
+        </AssistantMessageWrapper>
+      </>
     );
   }
 

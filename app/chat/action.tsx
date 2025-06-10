@@ -42,6 +42,8 @@ export const updateConversationTitle = async (
 // 删除对话
 export const deleteConversation = async (conversationId: string) => {
   await db.conversation.delete(conversationId);
+  revalidatePath(`/chat`);
+  revalidatePath(`/chat/conversation/${conversationId}`);
 };
 
 // 添加消息
@@ -82,6 +84,8 @@ export const getLLMResponseReactNode = async (
 
   const wrappedToolResults = createPromiseWithStatus(toolResults);
 
+  const { done: hasToolCall, value: firstChunk } = await llmGenerator.next();
+
   // 递归式流式渲染组件
   const StreamWithRecursion = async (props: { accumulator?: string }) => {
     const currentAccumulator = props.accumulator || "";
@@ -100,7 +104,6 @@ export const getLLMResponseReactNode = async (
         role: "assistant",
         conversationId,
       });
-      console.log(currentAccumulator, "*ai response result*");
       return <ParseToMarkdown block={currentAccumulator} />;
     }
 
@@ -115,19 +118,9 @@ export const getLLMResponseReactNode = async (
     );
   };
 
-  const StreamWithToolCalls = async (props: {
-    promise: ReturnType<
-      typeof createPromiseWithStatus<Awaited<typeof toolResults>>
-    >;
-  }) => {
+  const StreamWithToolCalls = async () => {
     const streamToolCalls = await toolCalls;
-    const toolResultsPromise = props.promise;
 
-    if (streamToolCalls.length === 0) {
-      return null;
-    }
-
-    console.log(streamToolCalls, "*streamToolCalls*");
     await db.message.create({
       content: JSON.stringify(streamToolCalls),
       role: "assistant",
@@ -135,24 +128,40 @@ export const getLLMResponseReactNode = async (
     });
 
     const toolName = streamToolCalls[0].toolName;
-    if (toolResultsPromise.isPending) {
+
+    // 递归处理工具调用结果
+    const ProcessToolResults = async () => {
+      if (wrappedToolResults.isPending) {
+        return (
+          <Suspense
+            fallback={
+              <ToolMessageWrapper>
+                <LoadingWithText text={`🔧正在执行 ${toolName} 工具...`} />
+              </ToolMessageWrapper>
+            }
+          >
+            <ProcessToolResults />
+          </Suspense>
+        );
+      }
+
+      if (wrappedToolResults.isFulfilled) {
+        const result = await wrappedToolResults.wrappedPromise;
+        const llmResponseReactNode = await addToolResultForNextMessage(
+          conversationId,
+          result
+        );
+        return llmResponseReactNode;
+      }
+
       return (
-        <Suspense fallback={<div>Tool Call: {toolName} pending</div>}>
-          <StreamWithToolCalls promise={toolResultsPromise} />
-        </Suspense>
+        <ToolMessageWrapper>
+          <LoadingWithText text={`❌工具调用失败: ${toolName}`} />
+        </ToolMessageWrapper>
       );
-    }
+    };
 
-    if (toolResultsPromise.isFulfilled) {
-      const result = await toolResultsPromise.wrappedPromise;
-      const llmResponseReactNode = await addToolResultForNextMessage(
-        conversationId,
-        result
-      );
-      return llmResponseReactNode;
-    }
-
-    return <div>Tool Call: {toolName} error</div>;
+    return <ProcessToolResults />;
   };
 
   return (
@@ -160,14 +169,23 @@ export const getLLMResponseReactNode = async (
       <UserMessageWrapper>
         {messages[messages.length - 1].content as string}
       </UserMessageWrapper>
-      <Suspense fallback={null}>
-        <StreamWithToolCalls promise={wrappedToolResults} />
-      </Suspense>
-      <AssistantMessageWrapper>
-        <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
-          <StreamWithRecursion />
+      {hasToolCall ? (
+        <Suspense
+          fallback={
+            <ToolMessageWrapper>
+              <LoadingWithText text={`🔧正在识别工具调用...`} />
+            </ToolMessageWrapper>
+          }
+        >
+          <StreamWithToolCalls />
         </Suspense>
-      </AssistantMessageWrapper>
+      ) : (
+        <AssistantMessageWrapper>
+          <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
+            <StreamWithRecursion accumulator={firstChunk} />
+          </Suspense>
+        </AssistantMessageWrapper>
+      )}
     </>
   );
 };
@@ -212,7 +230,6 @@ export const addToolResultForNextMessage = async (
         role: "assistant",
         conversationId,
       });
-      console.log(currentAccumulator, "*ai response result*");
       return <ParseToMarkdown block={currentAccumulator} />;
     }
 

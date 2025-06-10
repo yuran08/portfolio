@@ -16,18 +16,20 @@ type TimeGroup = {
 // 获取时间组标题
 const getTimeGroupTitle = (date: Date): string => {
   const now = dayjs();
-  const targetDate = dayjs(date);
+  const targetDate = dayjs(date).format("YYYY-MM-DD");
   const diffDays = now.diff(targetDate, "day");
 
   if (diffDays === 0) {
     return "今天";
+  } else if (diffDays <= 3) {
+    return "三天内";
   } else if (diffDays <= 7) {
     return "七天内";
   } else if (diffDays <= 30) {
     return "三十天内";
   } else {
     // 返回年月格式，如 "2025-03"
-    return targetDate.format("YYYY-MM");
+    return dayjs(targetDate).format("YYYY-MM");
   }
 };
 
@@ -57,7 +59,7 @@ const groupConversationsByTime = (
 
   // 按时间顺序排序分组
   const sortedGroups = Array.from(groups.values()).sort((a, b) => {
-    const order = ["今天", "七天内", "三十天内"];
+    const order = ["今天", "三天内", "七天内", "三十天内"];
     const aIndex = order.indexOf(a.title);
     const bIndex = order.indexOf(b.title);
 
@@ -109,10 +111,11 @@ export default async function ServerSideBar({
                   <NavigationButton
                     disabled={conversation.id === currentConversationId}
                     conversationId={conversation.id}
-                    className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${conversation.id === currentConversationId
-                      ? "bg-gray-200 dark:bg-slate-800/90"
-                      : ""
-                      }`}
+                    className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${
+                      conversation.id === currentConversationId
+                        ? "bg-gray-200 dark:bg-slate-800/90"
+                        : ""
+                    }`}
                   >
                     <span className="truncate">{conversation.title}</span>
                   </NavigationButton>

@@ -3,7 +3,7 @@
 import { Trash2, Loader2 } from "lucide-react";
 import { deleteConversation } from "./action";
 import { useFormStatus } from "react-dom";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 function DeleteButton() {
   const { pending } = useFormStatus();
@@ -30,10 +30,30 @@ export function DeleteConversationButton({
   conversationId: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleDelete = async () => {
-    await deleteConversation(conversationId);
-    router.push("/chat");
+    try {
+      await deleteConversation(conversationId);
+
+      // 从路径中提取当前对话ID
+      // 路径格式：/chat/conversation/{id} 或 /chat
+      const pathSegments = pathname.split("/");
+      const conversationIndex = pathSegments.indexOf("conversation");
+      const currentConversationId =
+        conversationIndex !== -1 && conversationIndex + 1 < pathSegments.length
+          ? pathSegments[conversationIndex + 1]
+          : null;
+
+      // 只有删除的是当前正在查看的对话时才跳转
+      if (currentConversationId === conversationId) {
+        router.push("/chat");
+      }
+      // 如果删除的不是当前对话，不需要跳转，侧边栏会自动更新
+    } catch (error) {
+      console.error("删除对话失败:", error);
+      // 可以在这里添加用户提示，比如toast通知
+    }
   };
 
   return (

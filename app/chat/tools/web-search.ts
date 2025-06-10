@@ -150,9 +150,6 @@ export const webSearchAITool = tool({
         answer: result.answer,
         results: result.results,
         images: result.images,
-        responseTime: result.responseTime,
-        timestamp: new Date().toISOString(),
-        summary: `找到 ${result.results.length} 个搜索结果`,
       };
     } catch (error) {
       console.error("❌ Tavily搜索工具执行失败:", error);
@@ -210,45 +207,13 @@ export const formatSearchResultsToMarkdown = (
 
   searchResponse.results.forEach(
     (result: TavilySearchResult, index: number) => {
-      markdown += `#### ${index + 1}. ${result.title}\n\n`;
-      markdown += `${result.content}\n\n`;
+      markdown += `#### ${index + 1}. ${result.title}  `;
 
       if (result.url) {
         markdown += `🔗 [查看原文](${result.url})\n\n`;
       }
-
-      if (result.score) {
-        markdown += `📊 相关度: ${Math.round(result.score * 100)}%\n\n`;
-      }
-
-      if (result.publishedDate) {
-        markdown += `📅 发布时间: ${result.publishedDate}\n\n`;
-      }
-
-      // if (
-      //   result.rawContent &&
-      //   result.rawContent !== result.content &&
-      //   result.rawContent.length > result.content.length
-      // ) {
-      //   markdown += `<details>\n<summary>查看完整内容</summary>\n\n${result.rawContent}\n\n</details>\n\n`;
-      // }
-
-      markdown += "---\n\n";
     }
   );
-
-  // if (searchResponse.images && searchResponse.images.length > 0) {
-  //   markdown += `### 🖼️ 相关图片\n\n`;
-  //   searchResponse.images
-  //     .slice(0, 3)
-  //     .forEach((image: TavilyImage, index: number) => {
-  //       markdown += `![图片 ${index + 1}${image.description ? `: ${image.description}` : ""}](${image.url})\n\n`;
-  //     });
-  // }
-
-  if (searchResponse.responseTime) {
-    markdown += `\n*搜索用时: ${searchResponse.responseTime}s*\n`;
-  }
 
   return markdown;
 };
