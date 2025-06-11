@@ -27,8 +27,7 @@ export const startConversation = async (message: string) => {
     role: "user",
     conversationId: conversation.id,
   });
-  const conversationList = await db.conversation.findMany();
-  return conversationList;
+  return conversation.id;
 };
 
 // 更新对话标题
@@ -100,6 +99,12 @@ export const getLLMResponseReactNode = async (
 
     // 如果流结束，返回最终结果
     if (done && currentAccumulator && currentAccumulator !== "undefined") {
+      // 在创建消息前检查对话是否仍然存在，避免因异步删除产生脏数据
+      const conversation = await db.conversation.findById(conversationId);
+      if (!conversation) {
+        return null;
+      }
+
       await db.message.create({
         content: currentAccumulator,
         role: "assistant",
@@ -267,6 +272,12 @@ export const addToolResultForNextMessage = async (
 
     // 如果流结束，返回最终结果
     if (done && currentAccumulator) {
+      // 在创建消息前检查对话是否仍然存在，避免因异步删除产生脏数据
+      const conversation = await db.conversation.findById(conversationId);
+      if (!conversation) {
+        return null;
+      }
+
       await db.message.create({
         content: currentAccumulator,
         role: "assistant",

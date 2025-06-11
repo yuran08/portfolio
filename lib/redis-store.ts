@@ -99,6 +99,9 @@ export class MessageStore {
         now
       );
 
+      // 4. 更新对话在列表中的排序位置（使用消息时间戳保证最新活动的对话排在前面）
+      pipeline.zadd("conversations", timestamp, data.conversationId);
+
       // 执行所有操作
       await pipeline.exec();
 
@@ -514,6 +517,41 @@ export class ConversationStore {
     } catch (error) {
       console.error(`❌ 删除对话失败 (${id}):`, error);
       return false;
+    }
+  }
+
+  /**
+   * 修复现有对话的排序问题
+   * 根据对话的 updatedAt 时间重新设置排序分数
+   */
+  static async fixConversationSorting(): Promise<void> {
+    const redis = await getRedisConnection();
+
+    try {
+      console.log("🔧 开始修复对话排序...");
+
+      // 1. 获取所有对话
+      const conversations = await ConversationStore.findMany();
+
+      if (conversations.length === 0) {
+        console.log("✅ 没有对话需要修复");
+        return;
+      }
+
+      // 2. 重新设置每个对话的排序分数
+      const pipeline = redis.pipeline();
+
+      conversations.forEach((conversation) => {
+        // 使用 updatedAt 的时间戳作为排序分数
+        const timestamp = new Date(conversation.updatedAt).getTime();
+        pipeline.zadd("conversations", timestamp, conversation.id);
+      });
+
+      await pipeline.exec();
+
+      console.log(`✅ 已修复 ${conversations.length} 个对话的排序`);
+    } catch (error) {
+      console.error("❌ 修复对话排序失败:", error);
     }
   }
 }

@@ -26,9 +26,9 @@ export default function ChatInput({
     if (isSendMessage.current) return;
     isSendMessage.current = true;
 
-    const conversationList = await startConversation(message);
+    const conversationId = await startConversation(message);
     isSendMessage.current = false;
-    router.push(`/chat/conversation/${conversationList[0].id}`);
+    router.push(`/chat/conversation/${conversationId}`);
   };
 
   const adjustTextareaHeight = () => {
