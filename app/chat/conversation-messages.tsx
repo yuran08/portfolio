@@ -4,7 +4,6 @@ import { useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 
 export function ConversationMessages({
-  conversationId,
   initialMessages,
 }: {
   conversationId: string;

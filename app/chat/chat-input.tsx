@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 
 export default function ChatInput({
   action,
-  conversationId,
 }: {
   action?: (formData: FormData) => void | Promise<void>;
   conversationId?: string;
@@ -33,8 +32,6 @@ export default function ChatInput({
     isSendMessage.current = false;
     router.push(`/chat/conversation/${conversationList[0].id}`);
   };
-
-  const finalAction = action || startConversationAction;
 
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
@@ -73,7 +70,7 @@ export default function ChatInput({
   return (
     <form
       ref={formRef}
-      action={finalAction}
+      action={action || startConversationAction}
       className="w-full rounded-xl border border-gray-200 bg-white p-4 shadow-lg dark:border-slate-700/60 dark:bg-slate-900/90 dark:shadow-2xl dark:shadow-slate-950/50"
     >
       <textarea

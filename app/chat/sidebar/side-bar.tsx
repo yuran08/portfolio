@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { getConversationList } from "../action";
 import { DeleteConversationButton } from "./delete-conversation-button";
 import { NavigationButton } from "./navigation-button";
 import dayjs from "dayjs";
+import { Conversation } from "../type";
 // 时间分组类型
 type TimeGroup = {
   title: string;
@@ -86,7 +86,7 @@ export default function ServerSideBar({
   conversations,
 }: {
   currentConversationId?: string;
-  conversations: any;
+  conversations: TimeGroup["conversations"];
 }) {
   const [activeConversationId, setActiveConversationId] = useState(
     currentConversationId
