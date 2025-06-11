@@ -94,8 +94,8 @@ export const UserMessageWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="my-6 flex justify-end">
-      <div className="max-w-[80%] rounded-2xl bg-blue-600 px-4 py-3 text-white shadow-lg dark:bg-blue-500">
+    <div className="my-4 flex justify-end px-2 sm:my-6 sm:px-0">
+      <div className="max-w-[85%] rounded-2xl bg-blue-600 px-3 py-2 text-white shadow-lg sm:max-w-[80%] sm:px-4 sm:py-3 dark:bg-blue-500">
         <div className="prose prose-invert prose-sm max-w-none">{children}</div>
       </div>
     </div>
@@ -108,12 +108,12 @@ export const AssistantMessageWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="my-6 flex justify-start">
-      <div className="flex w-full max-w-full items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
-          <Sparkles size={16} />
+    <div className="my-4 flex justify-start px-2 sm:my-6 sm:px-0">
+      <div className="flex w-full max-w-full items-start gap-2 sm:gap-3">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white sm:h-8 sm:w-8">
+          <Sparkles size={14} className="sm:size-4" />
         </div>
-        <div className="min-w-0 flex-1 rounded-2xl bg-gray-50 px-4 py-3 shadow-sm dark:bg-slate-800/80">
+        <div className="min-w-0 flex-1 rounded-2xl bg-gray-50 px-3 py-2 shadow-sm sm:px-4 sm:py-3 dark:bg-slate-800/80">
           <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
             {children}
           </div>
@@ -129,12 +129,12 @@ export const ToolMessageWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="my-6 flex justify-start">
-      <div className="flex w-full max-w-full items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white">
-          <Wrench size={16} />
+    <div className="my-4 flex justify-start px-2 sm:my-6 sm:px-0">
+      <div className="flex w-full max-w-full items-start gap-2 sm:gap-3">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-600 text-white sm:h-8 sm:w-8">
+          <Wrench size={14} className="sm:size-4" />
         </div>
-        <div className="min-w-0 flex-1 rounded-2xl bg-orange-50 px-4 py-3 shadow-sm dark:bg-orange-800/40">
+        <div className="min-w-0 flex-1 rounded-2xl bg-orange-50 px-3 py-2 shadow-sm sm:px-4 sm:py-3 dark:bg-orange-800/40">
           <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
             {children}
           </div>

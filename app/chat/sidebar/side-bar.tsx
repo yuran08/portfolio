@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { DeleteConversationButton } from "./delete-conversation-button";
 import { NavigationButton } from "./navigation-button";
+import { MobileMenuButton } from "./mobile-menu-button";
 import dayjs from "dayjs";
 // 时间分组类型
 type TimeGroup = {
@@ -90,64 +91,102 @@ export default function ServerSideBar({
   const [activeConversationId, setActiveConversationId] = useState(
     currentConversationId
   );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const groupedConversations = groupConversationsByTime(conversations);
 
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleConversationSelect = (conversationId: string) => {
+    setActiveConversationId(conversationId);
+    setIsMobileMenuOpen(false); // 在移动端选择对话后关闭菜单
+  };
+
   return (
-    <aside className="flex w-72 flex-col space-y-4 border-r border-gray-200 bg-white p-4 dark:border-slate-700/50 dark:bg-slate-900/95">
-      <NavigationButton
-        disabled={activeConversationId === "new-chat"}
-        className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-        onNavigation={() => {
-          setActiveConversationId("new-chat");
-        }}
-      >
-        <span>&#x270E;</span>
-        <span>开启新对话</span>
-      </NavigationButton>
+    <>
+      {/* 移动端菜单按钮 */}
+      <MobileMenuButton
+        isOpen={isMobileMenuOpen}
+        onToggle={handleMobileMenuToggle}
+      />
 
-      <div className="flex-1 overflow-y-auto">
-        {groupedConversations.map((group, groupIndex) => (
-          <div key={group.title} className={groupIndex > 0 ? "mt-6" : ""}>
-            {/* 时间组标题 */}
-            <div className="mb-2 px-2 text-xs font-medium text-gray-500 dark:text-slate-400">
-              {group.title}
-            </div>
+      {/* 移动端背景遮罩 */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
-            {/* 该组的对话列表 */}
-            <div className="space-y-1">
-              {group.conversations.map((conversation) => (
-                <div key={conversation.id} className="group relative">
-                  <NavigationButton
-                    disabled={conversation.id === activeConversationId}
-                    conversationId={conversation.id}
-                    onNavigation={() =>
-                      setActiveConversationId(conversation.id)
-                    }
-                    className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${
-                      conversation.id === activeConversationId
+      {/* 侧边栏 */}
+      <aside className={`
+        fixed left-0 top-0 z-50 flex h-full w-72 flex-col space-y-4 border-r border-gray-200 bg-white p-4 transition-transform duration-300 ease-in-out
+        dark:border-slate-700/50 dark:bg-slate-900/95
+        md:relative md:translate-x-0 md:z-40
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        {/* 移动端标题栏，包含关闭按钮的空间 */}
+        <div className="flex items-center justify-between md:hidden mb-4 pt-12">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+            对话历史
+          </h2>
+        </div>
+
+        <NavigationButton
+          disabled={activeConversationId === "new-chat"}
+          className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+          onNavigation={() => {
+            handleConversationSelect("new-chat");
+          }}
+        >
+          <span>&#x270E;</span>
+          <span>开启新对话</span>
+        </NavigationButton>
+
+        <div className="flex-1 overflow-y-auto">
+          {groupedConversations.map((group, groupIndex) => (
+            <div key={group.title} className={groupIndex > 0 ? "mt-6" : ""}>
+              {/* 时间组标题 */}
+              <div className="mb-2 px-2 text-xs font-medium text-gray-500 dark:text-slate-400">
+                {group.title}
+              </div>
+
+              {/* 该组的对话列表 */}
+              <div className="space-y-1">
+                {group.conversations.map((conversation) => (
+                  <div key={conversation.id} className="group relative">
+                    <NavigationButton
+                      disabled={conversation.id === activeConversationId}
+                      conversationId={conversation.id}
+                      onNavigation={() =>
+                        handleConversationSelect(conversation.id)
+                      }
+                      className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${conversation.id === activeConversationId
                         ? "bg-gray-200 dark:bg-slate-800/90"
                         : ""
-                    }`}
-                  >
-                    <span className="truncate">{conversation.title}</span>
-                  </NavigationButton>
+                        }`}
+                    >
+                      <span className="truncate">{conversation.title}</span>
+                    </NavigationButton>
 
-                  <DeleteConversationButton conversationId={conversation.id} />
-                </div>
-              ))}
+                    <DeleteConversationButton conversationId={conversation.id} />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {/* 当没有对话时的提示 */}
-        {groupedConversations.length === 0 && (
-          <div className="flex h-32 items-center justify-center">
-            <p className="text-sm text-gray-500 dark:text-slate-400">
-              暂无对话记录
-            </p>
-          </div>
-        )}
-      </div>
-    </aside>
+          {/* 当没有对话时的提示 */}
+          {groupedConversations.length === 0 && (
+            <div className="flex h-32 items-center justify-center">
+              <p className="text-sm text-gray-500 dark:text-slate-400">
+                暂无对话记录
+              </p>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }

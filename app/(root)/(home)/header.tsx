@@ -7,9 +7,9 @@ export default function Header() {
   const currentPage = useSelectPage();
 
   return (
-    <div className="absolute top-8 left-8 z-10">
+    <div className="absolute top-4 left-4 z-10 sm:top-8 sm:left-8">
       <ViewTransition name={currentPage}>
-        <h1 className="text-6xl font-bold tracking-tight uppercase">
+        <h1 className="text-3xl font-bold tracking-tight uppercase sm:text-4xl md:text-5xl lg:text-6xl">
           {currentPage}
         </h1>
       </ViewTransition>

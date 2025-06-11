@@ -46,6 +46,8 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
           integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP"
           crossOrigin="anonymous"
         />
+        {/* 移动端视口设置 */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
       {/* 为 Chat 添加 ThemeProvider，默认系统主题，无切换功能 */}
       <ThemeProvider
@@ -66,8 +68,8 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
               conversations={conversations}
             />
           </Suspense>
-          {/* 主内容区域 */}
-          <main className="flex flex-1 flex-col bg-white dark:bg-slate-950">
+          {/* 主内容区域 - 在移动端占满屏幕，在桌面端留出侧边栏空间 */}
+          <main className="flex flex-1 flex-col bg-white dark:bg-slate-950 w-full md:w-auto">
             {children}
           </main>
         </body>

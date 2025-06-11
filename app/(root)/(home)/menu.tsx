@@ -7,7 +7,7 @@ import { useSelectPage } from "./use-select-page";
 
 export default function Menu() {
   return (
-    <nav className="fixed right-8 bottom-8 flex flex-col gap-2 text-center">
+    <nav className="fixed right-4 bottom-4 flex flex-col gap-1.5 text-center sm:right-6 sm:bottom-6 sm:gap-2 lg:right-8 lg:bottom-8">
       {links.map((link) => (
         <MenuLink key={link.href} link={link} />
       ))}
@@ -24,7 +24,7 @@ const MenuLink = ({ link }: { link: { href: string; label: string } }) => {
     <ViewTransition name={link.label}>
       <Link
         href={link.href}
-        className="group relative block overflow-hidden px-2 py-1 text-xl font-bold uppercase focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+        className="group relative block overflow-hidden px-2 py-1 text-base font-bold uppercase focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring sm:text-lg lg:text-xl"
       >
         {/* Animated rectangle for hover effect */}
         <span

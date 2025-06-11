@@ -1,15 +1,15 @@
 export default function Home() {
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full items-center justify-center p-4">
       <a
         href="https://github.com/yuran08"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="GitHub"
-        className="touch-manipulation"
+        className="touch-manipulation rounded-lg p-2 transition-all hover:bg-black/5 active:scale-95 dark:hover:bg-white/5"
       >
         <svg
-          className="h-8 w-8 text-black transition-opacity hover:opacity-75 sm:h-10 sm:w-10 dark:text-white"
+          className="h-10 w-10 text-black transition-opacity hover:opacity-75 sm:h-12 sm:w-12 lg:h-14 lg:w-14 dark:text-white"
           viewBox="0 0 24 24"
           fill="currentColor"
         >
