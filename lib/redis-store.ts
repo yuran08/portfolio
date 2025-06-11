@@ -51,7 +51,7 @@ export class MessageStore {
   }): Promise<RedisMessage> {
     const redis = await getRedisConnection();
     const messageId = uuidv4();
-    const now = new Date().toISOString();
+    const now = new Date().toLocaleString();
 
     // 构建消息对象
     const message: RedisMessage = {
@@ -225,7 +225,7 @@ export class MessageStore {
         return null;
       }
 
-      const now = new Date().toISOString();
+      const now = new Date().toLocaleString();
       const updateFields: Record<string, string> = {
         updatedAt: now,
       };
@@ -300,7 +300,7 @@ export class ConversationStore {
   static async create(data: { title: string }): Promise<RedisConversation> {
     const redis = await getRedisConnection();
     const conversationId = uuidv4();
-    const now = new Date().toISOString();
+    const now = new Date().toLocaleString();
 
     const conversation: RedisConversation = {
       id: conversationId,
@@ -450,7 +450,7 @@ export class ConversationStore {
         return null;
       }
 
-      const now = new Date().toISOString();
+      const now = new Date().toLocaleString();
       const updateFields: Record<string, string> = {
         updatedAt: now,
       };

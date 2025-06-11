@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
   //   response.headers.set("x-debug-info", JSON.stringify({
   //     pathname,
   //     userAgent: request.headers.get("user-agent"),
-  //     timestamp: new Date().toISOString(),
+  //     timestamp: new Date().toLocaleString(),
   //   }));
   // }
 

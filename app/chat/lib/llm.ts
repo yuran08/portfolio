@@ -4,7 +4,7 @@ import { CoreMessage, streamText } from "ai";
 import { deepseek } from "@ai-sdk/deepseek";
 import { aiTools } from "../tools";
 
-const systemPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"。今天的日期是${new Date().toLocaleDateString("zh-CN")}。
+const systemPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"。今天的日期是${new Date().toLocaleString()}。
 
 # 核心能力
 

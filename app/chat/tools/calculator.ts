@@ -48,7 +48,7 @@ export const calculatorAITool = tool({
         expression,
         result,
         formatted: `${expression} = ${result}`,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toLocaleString(),
       };
     } catch (error) {
       console.error("❌ 计算器工具执行失败:", error);
