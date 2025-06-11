@@ -11,11 +11,11 @@ import { Suspense, ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
-import { LoadingWithText } from "./ui/skeleton";
+import { LoadingWithText, ErrorText } from "./ui/skeleton";
 import { createLLMStream } from "./lib/llm";
 import { CoreMessage, ToolResultPart } from "ai";
 import GetInitResponse from "./get-init-response";
-import { formatToolResult } from "./tools";
+import { BaseToolResult, formatToolResult } from "./tools";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -157,7 +157,7 @@ export const getLLMResponseReactNode = async (
 
       return (
         <ToolMessageWrapper>
-          <LoadingWithText text={`❌工具调用失败: ${toolName}`} />
+          <ErrorText text={`工具调用失败: ${toolName}`} />
         </ToolMessageWrapper>
       );
     };
@@ -196,11 +196,52 @@ export const addToolResultForNextMessage = async (
   conversationId: string,
   content: Message["content"]
 ) => {
+  // 检查工具是否需要AI进一步处理结果
+  let requiresFollowUp = true;
+
+  // 提取renderData字段进行存储，减少数据库内存压力
+  const extractRenderData = (toolResults: ToolResultPart[]) => {
+    return toolResults.map((toolResult) => {
+      const result = toolResult.result as BaseToolResult;
+
+      // 检查工具是否需要AI后续处理
+      // 当前最多只有一个toolcall，若增加多个需要修改判断逻辑
+      if (result.requiresFollowUp === false) {
+        requiresFollowUp = false;
+      }
+
+      return {
+        type: toolResult.type,
+        toolCallId: toolResult.toolCallId,
+        toolName: toolResult.toolName,
+        result: result.renderData, // 只存储渲染必要的数据
+      };
+    });
+  };
+
+  const optimizedContent = extractRenderData(content as ToolResultPart[]);
+
   await db.message.create({
-    content: JSON.stringify(content),
+    content: JSON.stringify(optimizedContent),
     role: "tool",
     conversationId,
   });
+
+  // 如果工具不需要AI进一步处理，直接返回工具结果
+  if (!requiresFollowUp) {
+    return (
+      <>
+        <ToolMessageWrapper>
+          <ParseToMarkdown
+            block={formatToolResult(
+              (content as ToolResultPart[])[0].toolName,
+              (content as ToolResultPart[])[0].result
+            )}
+          />
+        </ToolMessageWrapper>
+      </>
+    );
+  }
 
   const messages = (await db.message.findByConversationId(conversationId)).map(
     (message) => ({
@@ -267,8 +308,6 @@ export const addToolResultForNextMessage = async (
 // 获取初始对话的React节点
 export const getInitConversationReactNode = async (conversationId: string) => {
   const messages = await db.message.findByConversationId(conversationId);
-  console.log(messages.at(-2)?.content, "messages");
-  console.log(messages.at(-1)?.content, "messages");
   if (messages.length === 0)
     return (
       <div

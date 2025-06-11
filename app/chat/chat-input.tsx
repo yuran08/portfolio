@@ -23,8 +23,6 @@ export default function ChatInput({
     const message = String(formData.get("message"))?.trim();
     if (!message) return;
 
-    console.log(typeof message, "message");
-
     if (isSendMessage.current) return;
     isSendMessage.current = true;
 

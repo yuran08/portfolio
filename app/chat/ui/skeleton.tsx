@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, AlertCircle } from "lucide-react";
 
 // 基础 Skeleton 组件
 export function Skeleton({
@@ -14,6 +14,26 @@ export function Skeleton({
       className={`animate-pulse rounded bg-gray-200 dark:bg-slate-700 ${className}`}
     >
       {children}
+    </div>
+  );
+}
+
+// 错误文本展示组件
+export function ErrorText({
+  text = "出现错误",
+  icon = true,
+  className = "",
+}: {
+  text?: string;
+  icon?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex items-center justify-center space-x-2 text-red-500 dark:text-red-400 ${className}`}
+    >
+      {icon && <AlertCircle className="h-5 w-5" />}
+      <span className="text-sm font-medium">{text}</span>
     </div>
   );
 }

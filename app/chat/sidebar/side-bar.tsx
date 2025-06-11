@@ -4,7 +4,6 @@ import { useState } from "react";
 import { DeleteConversationButton } from "./delete-conversation-button";
 import { NavigationButton } from "./navigation-button";
 import dayjs from "dayjs";
-import { Conversation } from "../type";
 // 时间分组类型
 type TimeGroup = {
   title: string;

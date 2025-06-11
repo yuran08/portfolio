@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { getLLMResponseReactNode } from "./action";
 import { Message } from "./type";
 import { UserMessageWrapper, AssistantMessageWrapper } from "./ui/message";
-import { LoadingWithText } from "./ui/skeleton";
+import { LoadingWithText, ErrorText } from "./ui/skeleton";
 
 export default function GetInitResponse({
   conversationId,
@@ -65,7 +65,14 @@ export default function GetInitResponse({
 
   // 显示错误状态
   if (error) {
-    return <div className="text-red-500">错误: {error}</div>;
+    return (
+      <>
+        <UserMessageWrapper>{messages[0].content as string}</UserMessageWrapper>
+        <AssistantMessageWrapper>
+          <ErrorText text={error} />
+        </AssistantMessageWrapper>
+      </>
+    );
   }
 
   return response;

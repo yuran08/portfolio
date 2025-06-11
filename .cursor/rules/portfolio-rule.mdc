@@ -1,0 +1,95 @@
+---
+description: Portfolio项目开发规范和最佳实践
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.md", "**/*.json"]
+alwaysApply: true
+---
+
+# Portfolio 项目开发规范
+
+## 🏗️ 技术栈要求
+- **框架**: Next.js 15 (App Router)
+- **语言**: TypeScript (严格模式)
+- **样式**: TailwindCSS + Shadcn/ui
+- **AI**: AI SDK (Vercel) + DeepSeek API
+- **数据库**: Redis (Upstash)
+- **包管理**: pnpm
+
+## 💻 代码风格规范
+
+### TypeScript 规范
+- 避免使用 `any`，使用具体类型或 `unknown`
+- 优先使用 `interface` 定义对象类型
+- 使用 `import type` 导入类型
+
+### React 组件规范
+- 使用 `const` 声明组件，不使用 `function`
+- PascalCase 组件命名，文件名与组件名一致
+- 总是定义 Props 接口
+- 使用早期返回模式处理条件渲染
+
+### Server vs Client Components
+- 优先使用 Server Components
+- 仅在需要交互、状态时使用 `"use client"`
+- 使用 `"use server"` 处理表单和数据变更
+
+### 样式规范
+- 优先使用 TailwindCSS 类名
+- 遵循 mobile-first 原则
+- 使用 `dark:` 前缀支持深色主题
+
+## 🔧 功能实现规范
+
+### AI工具开发
+- 在 `app/chat/tools/` 下创建独立文件
+- 使用 Zod schema 验证参数
+- 必须包含 `renderData` 字段用于优化存储
+- 必须包含 `requiresFollowUp` 字段控制AI后续处理
+- 统一使用 `ErrorText` 组件显示错误
+
+#### 工具结果字段说明
+- `renderData`: 渲染必要的精简数据，减少存储压力
+- `requiresFollowUp`: 布尔值，控制工具结果是否需要AI进一步处理
+  - `true`: 需要AI根据工具结果生成回答（如搜索结果）
+  - `false`: 直接显示工具结果，无需AI处理（如计算结果）
+
+### 数据存储优化
+- 工具结果只存储 `renderData` 字段，减少Redis内存压力
+- 数据适配器保持 Prisma 兼容接口
+- 使用 Redis 连接池避免连接泄漏
+
+### UI组件规范
+- 加载状态: 使用 `LoadingWithText` 组件
+- 错误状态: 使用 `ErrorText` 组件
+- 骨架屏: 使用 skeleton 组件提升感知性能
+- 合理使用 `Suspense` 组件
+
+## 🌐 用户体验规范
+- 中文注释，英文变量命名
+- 中文界面，友好的错误提示
+- 响应式设计，移动端优先
+- 支持深色模式
+
+## 🚀 性能优化
+- 大型依赖使用动态导入
+- AI工具按需加载
+- 使用 `next/image` 和 `next/font` 优化资源
+
+## 🔒 安全规范
+- 敏感信息存储在环境变量
+- 使用 Zod 验证所有用户输入
+- 避免在日志中泄露敏感信息
+
+## 📋 开发流程要求
+
+### 完成修改后必须执行
+```bash
+pnpm lint    # 检查代码规范
+pnpm build   # 验证编译通过
+pnpm dev     # 确认功能正常
+```
+
+### 错误处理原则
+- 用户友好的错误信息
+- 控制台保留详细调试信息
+- 确保错误不会导致应用崩溃
+- 使用 Error Boundary 捕获组件错误

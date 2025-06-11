@@ -2,9 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { TavilySearchResponse, TavilySearchOptions } from "@tavily/core";
 
-// 从 TavilySearchResponse 中提取类型
-type TavilySearchResult = TavilySearchResponse["results"][number];
-type TavilyImage = TavilySearchResponse["images"][number];
+// 从 TavilySearchResponse 中提取类型（已简化，不再使用完整类型）
 
 // 定义搜索工具的参数模式
 export const webSearchToolSchema = z.object({
@@ -144,12 +142,25 @@ export const webSearchAITool = tool({
 
       const result = await searchWeb(query, searchOptions);
 
+      // 提取渲染必要的精简数据
+      const renderData = {
+        results:
+          result.results?.map((item) => ({
+            title: item.title,
+            url: item.url,
+          })) || [],
+      };
+
       return {
         success: true,
         query: result.query,
         answer: result.answer,
         results: result.results,
         images: result.images,
+        // 新增：渲染必要的精简数据
+        renderData,
+        // 搜索结果需要AI根据内容生成回答
+        requiresFollowUp: true,
       };
     } catch (error) {
       console.error("❌ Tavily搜索工具执行失败:", error);
@@ -157,6 +168,13 @@ export const webSearchAITool = tool({
         success: false,
         error: error instanceof Error ? error.message : "搜索失败",
         query,
+        // 错误情况下也提供renderData
+        renderData: {
+          query,
+          results: [],
+          resultsCount: 0,
+          error: error instanceof Error ? error.message : "搜索失败",
+        },
       };
     }
   },
@@ -165,37 +183,12 @@ export const webSearchAITool = tool({
 /**
  * 格式化搜索结果为 Markdown
  */
-export const formatSearchResultsToMarkdown = (
-  searchResponse:
-    | TavilySearchResponse
-    | {
-        success: boolean;
-        query?: string;
-        answer?: string;
-        results?: TavilySearchResult[];
-        images?: TavilyImage[];
-        error?: string;
-        responseTime?: number;
-      }
-): string => {
-  // 处理工具返回的格式
-  if ("success" in searchResponse) {
-    if (!searchResponse.success) {
-      return `## ❌ 搜索失败\n\n${searchResponse.error || "未知错误"}`;
-    }
-
-    // 转换为标准格式
-    const standardResponse: TavilySearchResponse = {
-      results: searchResponse.results || [],
-      query: searchResponse.query || "",
-      responseTime: searchResponse.responseTime || 0,
-      answer: searchResponse.answer,
-      images: searchResponse.images || [],
-    };
-
-    return formatSearchResultsToMarkdown(standardResponse);
-  }
-
+export const formatSearchResultsToMarkdown = (searchResponse: {
+  results: Array<{
+    title: string;
+    url: string;
+  }>;
+}): string => {
   let markdown = `## 🌐 网络搜索结果\n\n`;
 
   if (searchResponse.results.length === 0) {
@@ -205,15 +198,13 @@ export const formatSearchResultsToMarkdown = (
 
   markdown += `### 📚 详细结果 (${searchResponse.results.length}个)\n\n`;
 
-  searchResponse.results.forEach(
-    (result: TavilySearchResult, index: number) => {
-      markdown += `#### ${index + 1}. ${result.title}  `;
+  searchResponse.results.forEach((result, index: number) => {
+    markdown += `#### ${index + 1}. ${result.title}  `;
 
-      if (result.url) {
-        markdown += `🔗 [查看原文](${result.url})\n\n`;
-      }
+    if (result.url) {
+      markdown += `🔗 [查看原文](${result.url})\n\n`;
     }
-  );
+  });
 
   return markdown;
 };

@@ -37,11 +37,13 @@ export const calculatorAITool = tool({
   description: "计算数学表达式，支持基本的四则运算和括号",
   parameters: calculatorToolSchema,
   execute: async ({ expression }) => {
-    console.log("🧮 AI调用计算器工具:", { expression });
-
     try {
       const result = calculateExpression(expression);
-      console.log("✅ 计算器工具执行成功:", { expression, result });
+
+      // 渲染必要的精简数据
+      const renderData = {
+        formatted: `${expression} = ${result}`,
+      };
 
       return {
         success: true,
@@ -49,13 +51,27 @@ export const calculatorAITool = tool({
         result,
         formatted: `${expression} = ${result}`,
         timestamp: new Date().toLocaleString(),
+        // 新增：渲染必要的精简数据
+        renderData,
+        // 计算器结果无需AI进一步处理，直接显示即可
+        requiresFollowUp: false,
       };
     } catch (error) {
       console.error("❌ 计算器工具执行失败:", error);
+
+      // 错误情况下的renderData
+      const renderData = {
+        expression,
+        result: null,
+        error: error instanceof Error ? error.message : "计算失败",
+      };
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "计算失败",
         expression,
+        // 错误情况下也提供renderData
+        renderData,
       };
     }
   },
@@ -65,15 +81,7 @@ export const calculatorAITool = tool({
  * 格式化计算结果为 Markdown
  */
 export const formatCalculationResultToMarkdown = (calculationResult: {
-  success: boolean;
-  expression: string;
-  result?: number;
   formatted?: string;
-  error?: string;
 }): string => {
-  if (!calculationResult.success || calculationResult.error) {
-    return `## ❌ 计算失败\n\n${calculationResult.error || "未知错误"}`;
-  }
-
   return `## 🧮 计算结果\n\n\`\`\`\n${calculationResult.formatted}\n\`\`\`\n\n`;
 };

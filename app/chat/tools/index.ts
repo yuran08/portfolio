@@ -11,10 +11,21 @@ import {
 export const aiTools = {
   web_search: webSearchAITool,
   calculator: calculatorAITool,
-  // 在这里添加更多工具，例如：
+  // TODO: 在这里添加更多工具，例如：
   // weather: weatherAITool,
   // translator: translatorAITool,
 } as const;
+
+/**
+ * 工具结果基础接口
+ * 所有工具都应该返回这些字段
+ */
+export interface BaseToolResult {
+  success: boolean;
+  renderData: Record<string, unknown>; // 渲染必要的精简数据
+  requiresFollowUp: boolean; // 是否需要AI进一步处理结果
+  error?: string;
+}
 
 // 定义工具结果类型
 type WebSearchResult = Parameters<typeof formatSearchResultsToMarkdown>[0];
@@ -34,17 +45,21 @@ export const toolFormatters = {
  */
 const defaultFormatter = (result: unknown): string => {
   // 对于未知工具，尝试显示 summary 或原始结果
-  const resultObj = result as { summary?: string };
-  return (
-    resultObj.summary ||
-    `## 🔧 工具调用结果\n\n\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``
-  );
+  try {
+    const resultObj = result as { summary?: string };
+    return (
+      resultObj.summary ||
+      `## 🔧 工具调用结果\n\n\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``
+    );
+  } catch {
+    return `## ❌ 工具调用失败`;
+  }
 };
 
 /**
  * 统一的工具结果格式化方法
  * @param toolName 工具名称
- * @param result 工具结果
+ * @param result 工具结果（可能是完整结果或renderData）
  * @returns 格式化后的 Markdown 字符串
  */
 export const formatToolResult = (toolName: string, result: unknown): string => {
