@@ -35,6 +35,7 @@ export function ConversationMessages({
     if (messagesRef.current) {
       messagesRef.current.scrollTo({
         top: messagesRef.current.scrollHeight,
+        behavior: "smooth",
       });
     }
   }, [initialMessages]);

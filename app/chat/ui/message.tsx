@@ -10,7 +10,7 @@ import { useMemo } from "react";
 import { ComponentPropsWithoutRef } from "react";
 import { Sparkles, Wrench } from "lucide-react";
 import { Message } from "../type";
-// KaTeX CSS is now loaded via CDN in layout.tsx
+import "katex/dist/katex.min.css";
 
 /**
  * 预处理LaTeX内容，将各种格式的数学公式转换为remark-math支持的美元符号格式
@@ -47,12 +47,21 @@ function preprocessLaTeX(content: string) {
   );
 
   // 行内公式: \( ... \) 转换为 $ ... $
-  // 修复：使用更严格的匹配，避免跨行匹配和包含中文字符
+  // 改进：移除过度限制，支持更复杂的数学公式
   processedContent = processedContent.replace(
-    /\\\(([^)]*?)\\\)/g,
+    /\\\(([^\\]*?(?:\\.[^\\]*?)*?)\\\)/g,
     (match, content) => {
-      // 如果内容包含中文字符或者太长，很可能不是数学公式
-      if (/[\u4e00-\u9fff]/.test(content) || content.length > 100) {
+      // 只过滤明显不是数学公式的内容
+      // 检查是否包含大量中文文本（超过总长度的50%）
+      const chineseCharCount = (content.match(/[\u4e00-\u9fff]/g) || []).length;
+      const totalLength = content.length;
+
+      // 如果中文字符超过50%，或者内容过长且明显是文本，则跳过转换
+      if (
+        chineseCharCount > totalLength * 0.5 ||
+        (totalLength > 200 &&
+          !/[a-zA-Z\d\+\-\*\/\=\^\{\}\(\)\[\]\\]/.test(content))
+      ) {
         return match; // 保持原样，不转换
       }
       return `$${content}$`;
@@ -73,20 +82,6 @@ function preprocessLaTeX(content: string) {
 
   return processedContent;
 }
-// export const preprocessLaTeX = (content: string) => {
-//   // Replace block-level LaTeX delimiters \[ \] with $$ $$
-
-//   const blockProcessedContent = content.replace(
-//     /\\\[(.*?)\\\]/gs,
-//     (_, equation) => `$$${equation}$$`
-//   );
-//   // Replace inline LaTeX delimiters \( \) with $ $
-//   const inlineProcessedContent = blockProcessedContent.replace(
-//     /\\\((.*?)\\\)/gs,
-//     (_, equation) => `$${equation}$`
-//   );
-//   return inlineProcessedContent;
-// };
 
 export const UserMessageWrapper = ({
   children,
@@ -94,7 +89,7 @@ export const UserMessageWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="my-4 flex justify-end px-2 sm:my-6 sm:px-0">
+    <div className="mt-4 flex justify-end px-2 sm:mt-6 sm:px-0">
       <div className="max-w-[85%] rounded-2xl bg-blue-600 px-3 py-2 text-white shadow-lg sm:max-w-[80%] sm:px-4 sm:py-3 dark:bg-blue-500">
         <div className="prose prose-invert prose-sm max-w-none">{children}</div>
       </div>
@@ -108,7 +103,7 @@ export const AssistantMessageWrapper = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="my-4 flex justify-start px-2 sm:my-6 sm:px-0">
+    <div className="mt-4 flex justify-start px-2 sm:mt-6 sm:px-0">
       <div className="flex w-full max-w-full items-start gap-2 sm:gap-3">
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white sm:h-8 sm:w-8">
           <Sparkles size={14} className="sm:size-4" />
