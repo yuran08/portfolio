@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib/redis-adapter";
+import db from "@/lib/redis";
 import {
   UserMessageWrapper,
   AssistantMessageWrapper,

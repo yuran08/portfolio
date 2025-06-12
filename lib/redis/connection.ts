@@ -1,3 +1,9 @@
+/**
+ * Redis 连接池管理器
+ *
+ * 提供高效、可靠的Redis连接管理功能
+ */
+
 import { Redis, RedisOptions } from "ioredis";
 
 /**
@@ -90,6 +96,9 @@ class RedisConnectionPool {
         lazyConnect: true, // 延迟连接，只有在首次使用时才建立连接
         family: 4, // IPv4
         keepAlive: 30000, // 保持连接活跃 (30秒)
+
+        // 🚀 启用自动Pipeline，提升批量操作性能
+        enableAutoPipelining: true,
 
         // 重连策略：指数退避算法
         retryStrategy: (times: number): number => {
@@ -199,7 +208,7 @@ class RedisConnectionPool {
   /**
    * 获取连接状态
    *
-   * @returns boolean 连接是否处于活跃状态
+   * @returns boolean 连接是否就绪
    */
   public isConnectionReady(): boolean {
     return this.isConnected && this.client !== null;
@@ -214,9 +223,57 @@ class RedisConnectionPool {
     return {
       isConnected: this.isConnected,
       hasClient: this.client !== null,
-      clientStatus: this.client?.status || "none",
-      // 可以添加更多统计信息，如命令计数、错误率等
+      clientStatus: this.client?.status || "未连接",
     };
+  }
+
+  /**
+   * 🚀 健康检查方法
+   *
+   * @returns Promise<boolean> 连接是否健康
+   */
+  public async healthCheck(): Promise<boolean> {
+    try {
+      if (!this.client || !this.isConnected) {
+        return false;
+      }
+
+      // 执行 PING 命令测试连接
+      const result = await this.client.ping();
+      return result === "PONG";
+    } catch (error) {
+      console.error("❌ Redis 健康检查失败:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 🚀 获取Redis服务器信息
+   *
+   * @returns Promise<Record<string, string> | null> Redis服务器信息
+   */
+  public async getServerInfo(): Promise<Record<string, string> | null> {
+    try {
+      if (!this.client || !this.isConnected) {
+        return null;
+      }
+
+      const info = await this.client.info();
+      const infoLines = info.split("\r\n");
+      const infoObj: Record<string, string> = {};
+
+      infoLines.forEach((line) => {
+        if (line && !line.startsWith("#") && line.includes(":")) {
+          const [key, value] = line.split(":");
+          infoObj[key] = value;
+        }
+      });
+
+      return infoObj;
+    } catch (error) {
+      console.error("❌ 获取Redis服务器信息失败:", error);
+      return null;
+    }
   }
 
   /**
@@ -295,7 +352,7 @@ class RedisConnectionPool {
  *
  * @example
  * ```typescript
- * import { getRedisConnection } from '@/lib/redis';
+ * import { getRedisConnection } from '@/lib/redis/connection';
  *
  * const redis = await getRedisConnection();
  * await redis.set('key', 'value');
@@ -353,41 +410,78 @@ export const closeRedisConnection = async (timeout?: number): Promise<void> => {
 };
 
 /**
- * 获取连接池状态信息
- *
- * @returns 连接池状态对象
+ * 获取 Redis 连接统计信息
+ * @returns 连接池统计信息
  */
 export const getRedisConnectionStats = () => {
-  const pool = RedisConnectionPool.getInstance();
-  return pool.getConnectionStats();
+  return RedisConnectionPool.getInstance().getConnectionStats();
 };
 
 /**
- * 重置连接池（主要用于开发和测试）
- *
+ * 重置 Redis 连接池
+ * 用于开发环境或者连接出现问题时
  * @returns Promise<void>
  */
 export const resetRedisConnection = async (): Promise<void> => {
-  const pool = RedisConnectionPool.getInstance();
-  await pool.reset();
+  return RedisConnectionPool.getInstance().reset();
+};
+
+/**
+ * 🚀 Redis健康检查工具
+ * @returns Promise<{ healthy: boolean; info?: Record<string, string>; error?: string }>
+ */
+export const redisHealthCheck = async (): Promise<{
+  healthy: boolean;
+  info?: Record<string, string>;
+  error?: string;
+}> => {
+  try {
+    const pool = RedisConnectionPool.getInstance();
+    const healthy = await pool.healthCheck();
+
+    if (healthy) {
+      const info = await pool.getServerInfo();
+      return { healthy: true, info: info || undefined };
+    } else {
+      return { healthy: false, error: "连接不健康" };
+    }
+  } catch (error) {
+    return {
+      healthy: false,
+      error: error instanceof Error ? error.message : "未知错误",
+    };
+  }
+};
+
+/**
+ * 🚀 Redis性能监控工具
+ * @returns Promise<{ memoryUsage: string; commandsProcessed: string; connectedClients: string }>
+ */
+export const redisPerformanceStats = async (): Promise<{
+  memoryUsage?: string;
+  commandsProcessed?: string;
+  connectedClients?: string;
+  uptime?: string;
+} | null> => {
+  try {
+    const pool = RedisConnectionPool.getInstance();
+    const info = await pool.getServerInfo();
+
+    if (!info) return null;
+
+    return {
+      memoryUsage: info.used_memory_human,
+      commandsProcessed: info.total_commands_processed,
+      connectedClients: info.connected_clients,
+      uptime: info.uptime_in_seconds
+        ? `${Math.floor(Number(info.uptime_in_seconds) / 3600)}小时`
+        : undefined,
+    };
+  } catch (error) {
+    console.error("❌ 获取Redis性能统计失败:", error);
+    return null;
+  }
 };
 
 // 导出默认连接获取函数，保持向后兼容
 export default getRedisConnection;
-
-// Redis键前缀
-export const REDIS_KEYS = {
-  CONVERSATION: "conversation:",
-  MESSAGE: "message:",
-  CONVERSATION_MESSAGES: "conversation_messages:",
-  CONVERSATION_LIST: "conversations",
-  MESSAGE_COUNTER: "message_counter",
-} as const;
-
-// 工具函数：生成Redis键
-export const generateRedisKey = {
-  conversation: (id: string) => `${REDIS_KEYS.CONVERSATION}${id}`,
-  message: (id: string) => `${REDIS_KEYS.MESSAGE}${id}`,
-  conversationMessages: (conversationId: string) =>
-    `${REDIS_KEYS.CONVERSATION_MESSAGES}${conversationId}`,
-};

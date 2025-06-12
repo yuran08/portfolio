@@ -17,13 +17,17 @@
  * - **监控**: 集中的连接状态监控和管理
  */
 
-import { CoreMessage } from "ai";
-import {
-  MessageStore,
-  ConversationStore,
+import type { CoreMessage } from "ai";
+import { MessageStore } from "./store/message";
+import { ConversationStore } from "./store/conversation";
+import type {
   RedisMessage,
   RedisConversation,
-} from "./redis-store";
+  CreateMessageData,
+  CreateConversationData,
+  UpdateMessageData,
+  UpdateConversationData,
+} from "./store/types";
 
 // 类型定义 - 与 Prisma 兼容
 export interface Message extends Omit<CoreMessage, "id"> {
@@ -98,7 +102,12 @@ export class RedisAdapter {
       role: "user" | "assistant" | "tool";
       conversationId: string;
     }): Promise<Message> {
-      const redisMessage = await MessageStore.create(data);
+      const createData: CreateMessageData = {
+        content: data.content,
+        role: data.role,
+        conversationId: data.conversationId,
+      };
+      const redisMessage = await MessageStore.create(createData);
       return redisMessageToMessage(redisMessage);
     },
 
@@ -136,7 +145,10 @@ export class RedisAdapter {
       id: string,
       data: { content?: Message["content"] }
     ): Promise<Message | null> {
-      const redisMessage = await MessageStore.update(id, data);
+      const updateData: UpdateMessageData = {
+        content: data.content,
+      };
+      const redisMessage = await MessageStore.update(id, updateData);
       return redisMessage ? redisMessageToMessage(redisMessage) : null;
     },
 
@@ -148,6 +160,29 @@ export class RedisAdapter {
      */
     async delete(id: string): Promise<boolean> {
       return await MessageStore.delete(id);
+    },
+
+    /**
+     * 批量删除消息
+     *
+     * @param ids - 消息ID数组
+     * @returns Promise<number> 成功删除的数量
+     */
+    async deleteMany(ids: string[]): Promise<number> {
+      return await MessageStore.deleteMany(ids);
+    },
+
+    /**
+     * 获取消息统计信息
+     *
+     * @param conversationId - 对话ID（可选）
+     * @returns Promise<{ total: number; byRole: Record<string, number> }>
+     */
+    async getStats(conversationId?: string): Promise<{
+      total: number;
+      byRole: Record<string, number>;
+    }> {
+      return await MessageStore.getStats(conversationId);
     },
   };
 
@@ -166,7 +201,10 @@ export class RedisAdapter {
      * @returns Promise<Conversation> 创建的对话对象
      */
     async create(data: { title: string }): Promise<Conversation> {
-      const redisConversation = await ConversationStore.create(data);
+      const createData: CreateConversationData = {
+        title: data.title,
+      };
+      const redisConversation = await ConversationStore.create(createData);
       return redisConversationToConversation(redisConversation);
     },
 
@@ -232,7 +270,10 @@ export class RedisAdapter {
       id: string,
       data: { title?: string }
     ): Promise<Conversation | null> {
-      const redisConversation = await ConversationStore.update(id, data);
+      const updateData: UpdateConversationData = {
+        title: data.title,
+      };
+      const redisConversation = await ConversationStore.update(id, updateData);
       return redisConversation
         ? redisConversationToConversation(redisConversation)
         : null;
@@ -251,6 +292,34 @@ export class RedisAdapter {
     async delete(id: string): Promise<boolean> {
       return await ConversationStore.delete(id);
     },
+
+    /**
+     * 批量删除对话
+     *
+     * @param ids - 对话ID数组
+     * @returns Promise<number> 成功删除的数量
+     */
+    async deleteMany(ids: string[]): Promise<number> {
+      return await ConversationStore.deleteMany(ids);
+    },
+
+    /**
+     * 修复对话排序
+     *
+     * @returns Promise<void>
+     */
+    async fixSorting(): Promise<void> {
+      return await ConversationStore.fixConversationSorting();
+    },
+
+    /**
+     * 获取对话统计信息
+     *
+     * @returns Promise<{ total: number; recentCount: number }>
+     */
+    async getStats(): Promise<{ total: number; recentCount: number }> {
+      return await ConversationStore.getStats();
+    },
   };
 }
 
@@ -259,7 +328,7 @@ export class RedisAdapter {
  *
  * 【使用方式】
  * ```typescript
- * import { db } from '@/lib/redis-adapter';
+ * import db from '@/lib/redis';
  *
  * // 创建消息
  * const message = await db.message.create({
