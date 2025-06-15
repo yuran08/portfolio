@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, ReactNode, useRef } from "react";
+import { useState, useCallback, ReactNode, useRef, useOptimistic, startTransition } from "react";
 import { conversationAddMessage } from "./action";
-import ChatInput from "./chat-input";
+import ChatInput, { ChatInputRef } from "./chat-input";
 import { ConversationMessages } from "./conversation-messages";
+import { UserMessageWrapper } from "./ui/message";
 
 export default function ClientPage({
   conversationId,
@@ -15,9 +16,23 @@ export default function ClientPage({
   const [messagesNode, setMessagesNode] = useState<ReactNode[]>([
     initialMessages,
   ]);
+  const chatInputRef = useRef<ChatInputRef>(null);
   const isSendMessage = useRef(false);
 
-  // 创建消息发送action
+  // useOptimistic 基于实际状态，只用于临时显示乐观消息
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
+    messagesNode, // 实际状态
+    (state: ReactNode[], optimisticUserMessage: string) => {
+      // 在实际状态基础上添加乐观的用户消息
+      return [
+        ...state,
+        <UserMessageWrapper>
+          {optimisticUserMessage}
+        </UserMessageWrapper>
+      ];
+    }
+  );
+
   const handleMessageSubmit = useCallback(
     async (formData: FormData) => {
       const message = (formData.get("message") as string)?.trim();
@@ -26,19 +41,26 @@ export default function ClientPage({
       if (isSendMessage.current) return;
       isSendMessage.current = true;
 
+      chatInputRef.current?.clearInput();
+
+      addOptimisticMessage(message);
+
       try {
-        const newMessage = await conversationAddMessage(
-          conversationId,
-          message
-        );
-        setMessagesNode((prev) => [...prev, newMessage]);
+        const newMessagesNode = await conversationAddMessage(conversationId, message);
+
+        startTransition(() => {
+          setMessagesNode((prevMessagesNode: ReactNode[]) => [
+            ...prevMessagesNode,
+            newMessagesNode,
+          ]);
+        });
       } catch (error) {
         console.error("❌ 发送消息失败:", error);
       } finally {
         isSendMessage.current = false;
       }
     },
-    [conversationId]
+    [conversationId, addOptimisticMessage]
   );
 
   return (
@@ -48,16 +70,15 @@ export default function ClientPage({
         <div className="h-full w-full bg-gradient-to-b from-white to-transparent dark:from-slate-950"></div>
       </div>
 
-      {/* 可滚动的消息区域 */}
       <ConversationMessages
         conversationId={conversationId}
-        initialMessages={messagesNode}
+        initialMessages={optimisticMessages}
       />
 
-      {/* 固定在底部的输入框 */}
       <div className="sticky bottom-0 bg-white px-6 pb-6 dark:bg-slate-950">
         <div className="mx-auto max-w-3xl">
           <ChatInput
+            ref={chatInputRef}
             conversationId={conversationId}
             action={handleMessageSubmit}
           />

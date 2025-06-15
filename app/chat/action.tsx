@@ -74,7 +74,7 @@ export const getConversationList = async () => {
 // 根据消息生成LLM响应的React节点
 export const getLLMResponseReactNode = async (
   conversationId: string,
-  messages: Message[]
+  messages: Message[],
 ): Promise<ReactNode> => {
   const { textStream, toolCalls, toolResults } = await createLLMStream(
     messages as CoreMessage[]

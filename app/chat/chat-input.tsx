@@ -1,27 +1,50 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import RenderFormPending from "./render-form-pending";
 import { startConversation } from "./action";
 import { useRouter } from "next/navigation";
 
-export default function ChatInput({
-  action,
-}: {
+// 定义暴露的方法接口
+export interface ChatInputRef {
+  clearInput: () => void;
+  focus: () => void;
+}
+
+const ChatInput = forwardRef<ChatInputRef, {
   action?: (formData: FormData) => void | Promise<void>;
   conversationId?: string;
-}) {
+}>(function ChatInput({ action }, ref) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isComposing, setIsComposing] = useState(false);
   const isSendMessage = useRef(false);
   const router = useRouter();
 
+  // 暴露方法给父组件
+  useImperativeHandle(ref, () => ({
+    clearInput: () => {
+      if (textareaRef.current) {
+        textareaRef.current.value = "";
+        adjustTextareaHeight();
+      }
+    },
+    focus: () => {
+      textareaRef.current?.focus();
+    }
+  }));
+
   // 默认的处理函数
   const startConversationAction = async (formData: FormData) => {
     const message = String(formData.get("message"))?.trim();
     if (!message) return;
+
+    // 清空输入框
+    if (textareaRef.current) {
+      textareaRef.current.value = "";
+      adjustTextareaHeight();
+    }
 
     if (isSendMessage.current) return;
     isSendMessage.current = true;
@@ -33,9 +56,8 @@ export default function ChatInput({
 
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"; // Reset height to recalculate
+      textareaRef.current.style.height = "auto";
       const scrollHeight = textareaRef.current.scrollHeight;
-      // Estimate character height of one row, or use a fixed pixel value for two rows
       const twoRowsHeight =
         parseFloat(getComputedStyle(textareaRef.current).lineHeight) * 2;
       textareaRef.current.style.height = `${Math.max(scrollHeight, twoRowsHeight)}px`;
@@ -127,4 +149,6 @@ export default function ChatInput({
       </form>
     </div>
   );
-}
+});
+
+export default ChatInput;
