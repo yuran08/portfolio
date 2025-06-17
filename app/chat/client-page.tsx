@@ -33,7 +33,9 @@ export default function ClientPage({
       // 在实际状态基础上添加乐观的用户消息
       return [
         ...state,
-        <UserMessageWrapper>{optimisticUserMessage}</UserMessageWrapper>,
+        <UserMessageWrapper key={optimisticUserMessage}>
+          {optimisticUserMessage}
+        </UserMessageWrapper>,
       ];
     }
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { ComponentPropsWithoutRef, FC, memo } from "react";
+import { ComponentPropsWithoutRef, memo } from "react";
 
 import { useCopyToClipboard } from "../lib/hooks/use-copy-to-clipboard";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Check, Copy, Download } from "lucide-react";
  * @param node The node or array of nodes to extract text from.
  * @returns The concatenated text content.
  */
-const getNodeText = (node: any): string => {
+const getNodeText = (node: unknown): string => {
   if (!node) {
     return "";
   }
@@ -22,15 +22,20 @@ const getNodeText = (node: any): string => {
   if (typeof node === "string") {
     return node;
   }
-  if (typeof node.value === "string") {
-    return node.value;
+  if (typeof (node as { value: string }).value === "string") {
+    return (node as { value: string }).value;
   }
-  if (node.children) {
-    return getNodeText(node.children);
+  if ((node as { children: unknown[] }).children) {
+    return getNodeText((node as { children: unknown[] }).children);
   }
   // For React components, attempt to extract from props.children
-  if (node.props && node.props.children) {
-    return getNodeText(node.props.children);
+  if (
+    (node as { props: { children: unknown } }).props &&
+    (node as { props: { children: unknown } }).props.children
+  ) {
+    return getNodeText(
+      (node as { props: { children: unknown } }).props.children
+    );
   }
   return "";
 };
@@ -70,11 +75,9 @@ const CodeBlock = ({
   inline,
   className,
   children,
-  node,
   ...props
 }: ComponentPropsWithoutRef<"code"> & {
   inline?: boolean;
-  node?: any;
 }) => {
   const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 });
   const match = /language-(\w+)/.exec(className || "");
