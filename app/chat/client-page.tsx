@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useCallback, ReactNode, useRef, useOptimistic, startTransition } from "react";
+import {
+  useState,
+  useCallback,
+  ReactNode,
+  useRef,
+  useOptimistic,
+  startTransition,
+} from "react";
 import { conversationAddMessage } from "./action";
 import ChatInput, { ChatInputRef } from "./chat-input";
 import { ConversationMessages } from "./conversation-messages";
-import { UserMessageWrapper } from "./ui/message";
+import { UserMessageWrapper } from "./components/message";
 
 export default function ClientPage({
   conversationId,
@@ -26,9 +33,7 @@ export default function ClientPage({
       // 在实际状态基础上添加乐观的用户消息
       return [
         ...state,
-        <UserMessageWrapper>
-          {optimisticUserMessage}
-        </UserMessageWrapper>
+        <UserMessageWrapper>{optimisticUserMessage}</UserMessageWrapper>,
       ];
     }
   );
@@ -46,7 +51,10 @@ export default function ClientPage({
       addOptimisticMessage(message);
 
       try {
-        const newMessagesNode = await conversationAddMessage(conversationId, message);
+        const newMessagesNode = await conversationAddMessage(
+          conversationId,
+          message
+        );
 
         startTransition(() => {
           setMessagesNode((prevMessagesNode: ReactNode[]) => [

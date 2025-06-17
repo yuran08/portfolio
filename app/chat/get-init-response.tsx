@@ -3,8 +3,11 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { getLLMResponseReactNode } from "./action";
 import { Message } from "./type";
-import { UserMessageWrapper, AssistantMessageWrapper } from "./ui/message";
-import { LoadingWithText, ErrorText } from "./ui/skeleton";
+import {
+  UserMessageWrapper,
+  AssistantMessageWrapper,
+} from "./components/message";
+import { LoadingWithText, ErrorText } from "./components/skeleton";
 
 export default function GetInitResponse({
   conversationId,

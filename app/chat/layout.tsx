@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { HighlightThemeSwitcher } from "./highlight-theme-switcher";
 import { Suspense } from "react";
 import SideBar from "./sidebar/side-bar";
-import { SidebarSkeleton } from "./ui/skeleton";
+import { SidebarSkeleton } from "./components/skeleton";
 import { headers } from "next/headers";
 import { getConversationList } from "./action";
 

@@ -5,17 +5,17 @@ import {
   UserMessageWrapper,
   AssistantMessageWrapper,
   ToolMessageWrapper,
-  ParseToMarkdown,
-} from "./ui/message";
+} from "./components/message";
 import { Suspense, ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
-import { LoadingWithText, ErrorText } from "./ui/skeleton";
+import { LoadingWithText, ErrorText } from "./components/skeleton";
 import { createLLMStream } from "./lib/llm";
 import { CoreMessage, ToolResultPart } from "ai";
 import GetInitResponse from "./get-init-response";
 import { BaseToolResult, formatToolResult } from "./tools";
+import { MemoizedMarkdown } from "./components/markdown";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -74,7 +74,7 @@ export const getConversationList = async () => {
 // 根据消息生成LLM响应的React节点
 export const getLLMResponseReactNode = async (
   conversationId: string,
-  messages: Message[],
+  messages: Message[]
 ): Promise<ReactNode> => {
   const { textStream, toolCalls, toolResults } = await createLLMStream(
     messages as CoreMessage[]
@@ -110,7 +110,7 @@ export const getLLMResponseReactNode = async (
         role: "assistant",
         conversationId,
       });
-      return <ParseToMarkdown block={currentAccumulator} />;
+      return <MemoizedMarkdown block={currentAccumulator} />;
     }
 
     // 更新累积文本
@@ -118,7 +118,7 @@ export const getLLMResponseReactNode = async (
 
     // 渲染当前文本，并设置下一次更新
     return (
-      <Suspense fallback={<ParseToMarkdown block={newAccumulator} />}>
+      <Suspense fallback={<MemoizedMarkdown block={newAccumulator} />}>
         <StreamWithRecursion accumulator={newAccumulator} />
       </Suspense>
     );
@@ -237,7 +237,7 @@ export const addToolResultForNextMessage = async (
     return (
       <>
         <ToolMessageWrapper>
-          <ParseToMarkdown
+          <MemoizedMarkdown
             block={formatToolResult(
               (content as ToolResultPart[])[0].toolName,
               (content as ToolResultPart[])[0].result
@@ -283,7 +283,7 @@ export const addToolResultForNextMessage = async (
         role: "assistant",
         conversationId,
       });
-      return <ParseToMarkdown block={currentAccumulator} />;
+      return <MemoizedMarkdown block={currentAccumulator} />;
     }
 
     // 更新累积文本
@@ -291,7 +291,7 @@ export const addToolResultForNextMessage = async (
 
     // 渲染当前文本，并设置下一次更新
     return (
-      <Suspense fallback={<ParseToMarkdown block={newAccumulator} />}>
+      <Suspense fallback={<MemoizedMarkdown block={newAccumulator} />}>
         <StreamWithRecursion accumulator={newAccumulator} />
       </Suspense>
     );
@@ -300,7 +300,7 @@ export const addToolResultForNextMessage = async (
   return (
     <>
       <ToolMessageWrapper>
-        <ParseToMarkdown
+        <MemoizedMarkdown
           block={formatToolResult(
             (content as ToolResultPart[])[0].toolName,
             (content as ToolResultPart[])[0].result
@@ -355,7 +355,7 @@ export const getInitConversationReactNode = async (conversationId: string) => {
         ) {
           return (
             <AssistantMessageWrapper key={message.id}>
-              <ParseToMarkdown
+              <MemoizedMarkdown
                 block={message.content || "## 系统错误，请重试"}
               />
             </AssistantMessageWrapper>
@@ -371,7 +371,7 @@ export const getInitConversationReactNode = async (conversationId: string) => {
             return (
               <ToolMessageWrapper key={message.id}>
                 {tools.map((item, index) => (
-                  <ParseToMarkdown
+                  <MemoizedMarkdown
                     key={`${item.toolName}-${index}`}
                     block={formatToolResult(item.toolName, item.result)}
                   />

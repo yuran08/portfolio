@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ChatPageSkeleton } from "../../ui/skeleton";
+import { ChatPageSkeleton } from "../../components/skeleton";
 import ClientPage from "../../client-page";
 import { getInitConversationReactNode } from "../../action";
 

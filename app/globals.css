@@ -189,7 +189,7 @@
   transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
   /* 确保代码块有最小高度 */
   min-height: 2.5rem;
-  padding: 1rem;
+  @apply relative p-4 pt-10; /* 相对定位和内边距调整 */
 }
 
 /* 代码块加载状态 */
