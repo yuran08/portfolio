@@ -37,7 +37,7 @@ export function ConversationMessages({
     if (hasInitiallyScrolled) {
       scrollToBottom();
     }
-  }, [initialMessages]);
+  }, [scrollToBottom, initialMessages]);
 
   // 主Effect，处理初始滚动和滚动事件监听
   useEffect(() => {

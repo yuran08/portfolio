@@ -33,7 +33,7 @@ export default function ClientPage({
       // 在实际状态基础上添加乐观的用户消息
       return [
         ...state,
-        <AwaitResponseMessageWrapper input={optimisticUserMessage} />,
+        <AwaitResponseMessageWrapper key={Date.now()} input={optimisticUserMessage} />,
       ];
     }
   );
