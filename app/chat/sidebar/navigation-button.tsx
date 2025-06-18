@@ -1,46 +1,42 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface NavigationButtonProps {
   children: React.ReactNode;
   disabled?: boolean;
   className?: string;
-  conversationId?: string;
+  href: string;
   onNavigation: () => void;
 }
 
 /**
  * 导航按钮组件
- * 使用Server Action进行导航并清除缓存
+ * 使用 <Link> 实现预取和导航，同时支持 onClick 事件
  */
 export function NavigationButton({
   children,
   disabled,
   className,
-  conversationId,
+  href,
   onNavigation,
 }: NavigationButtonProps) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
   const handleClick = () => {
-    startTransition(async () => {
+    if (isPending || disabled) return;
+    startTransition(() => {
       onNavigation();
-      if (conversationId) {
-        router.push(`/chat/conversation/${conversationId}`);
-      } else {
-        router.push("/chat");
-      }
     });
   };
 
   return (
-    <button
+    <Link
+      href={href}
       onClick={handleClick}
-      disabled={isPending || disabled}
-      className={`${className} ${isPending || disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+      aria-disabled={isPending || disabled}
+      className={`${className} ${isPending || disabled ? "pointer-events-none opacity-50" : ""}`}
     >
       {isPending ? (
         <div className="flex items-center space-x-2">
@@ -50,6 +46,6 @@ export function NavigationButton({
       ) : (
         children
       )}
-    </button>
+    </Link>
   );
 }

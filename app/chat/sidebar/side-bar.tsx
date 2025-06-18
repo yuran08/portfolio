@@ -120,14 +120,11 @@ export default function ServerSideBar({
       )}
 
       {/* 侧边栏 */}
-      <aside className={`
-        fixed left-0 top-0 z-50 flex h-full w-72 flex-col space-y-4 border-r border-gray-200 bg-white p-4 transition-transform duration-300 ease-in-out
-        dark:border-slate-700/50 dark:bg-slate-900/95
-        md:relative md:translate-x-0 md:z-40
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}>
+      <aside
+        className={`fixed left-0 top-0 z-50 flex h-full w-72 flex-col space-y-4 border-r border-gray-200 bg-white p-4 transition-transform duration-300 ease-in-out md:relative md:z-40 md:translate-x-0 dark:border-slate-700/50 dark:bg-slate-900/95 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} `}
+      >
         {/* 移动端标题栏，包含关闭按钮的空间 */}
-        <div className="flex items-center justify-between md:hidden mb-4 pt-12">
+        <div className="mb-4 flex items-center justify-between pt-12 md:hidden">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
             对话历史
           </h2>
@@ -135,6 +132,7 @@ export default function ServerSideBar({
 
         <NavigationButton
           disabled={activeConversationId === "new-chat"}
+          href="/chat"
           className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
           onNavigation={() => {
             handleConversationSelect("new-chat");
@@ -158,19 +156,22 @@ export default function ServerSideBar({
                   <div key={conversation.id} className="group relative">
                     <NavigationButton
                       disabled={conversation.id === activeConversationId}
-                      conversationId={conversation.id}
+                      href={`/chat/conversation/${conversation.id}`}
                       onNavigation={() =>
                         handleConversationSelect(conversation.id)
                       }
-                      className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${conversation.id === activeConversationId
-                        ? "bg-gray-200 dark:bg-slate-800/90"
-                        : ""
-                        }`}
+                      className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${
+                        conversation.id === activeConversationId
+                          ? "bg-gray-200 dark:bg-slate-800/90"
+                          : ""
+                      }`}
                     >
                       <span className="truncate">{conversation.title}</span>
                     </NavigationButton>
 
-                    <DeleteConversationButton conversationId={conversation.id} />
+                    <DeleteConversationButton
+                      conversationId={conversation.id}
+                    />
                   </div>
                 ))}
               </div>
