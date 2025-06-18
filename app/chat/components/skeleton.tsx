@@ -81,10 +81,8 @@ export function MessageSkeleton() {
 // 对话历史骨架屏
 export function ConversationHistorySkeleton() {
   return (
-    <div className="w-full max-w-3xl flex-1 space-y-4 p-3 sm:p-6">
-      {[1, 2].map((i) => (
-        <MessageSkeleton key={i} />
-      ))}
+    <div className="h-fit w-full max-w-3xl flex-1 space-y-4 p-3 sm:p-6">
+      <MessageSkeleton />
     </div>
   );
 }
@@ -92,7 +90,7 @@ export function ConversationHistorySkeleton() {
 // 侧边栏骨架屏
 export function SidebarSkeleton() {
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-full w-72 flex-col space-y-4 border-r border-gray-200 bg-white p-4 -translate-x-full md:relative md:translate-x-0 dark:border-slate-700/50 dark:bg-slate-900/95">
+    <aside className="fixed left-0 top-0 z-40 flex h-full w-72 -translate-x-full flex-col space-y-4 border-r border-gray-200 bg-white p-4 md:relative md:translate-x-0 dark:border-slate-700/50 dark:bg-slate-900/95">
       {/* 移动端标题栏占位 */}
       <div className="mb-4 pt-12 md:hidden">
         <Skeleton className="h-6 w-24" />
@@ -136,12 +134,11 @@ export function ChatInputSkeleton() {
 // 聊天页面骨架屏
 export function ChatPageSkeleton() {
   return (
-    <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-white p-6 dark:bg-slate-950">
+    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-white p-6 dark:bg-slate-950">
       <div className="absolute left-0 top-6 z-50 box-border h-4 w-full bg-gradient-to-r from-white to-transparent px-6 dark:from-slate-950">
         <div className="h-full w-full bg-gradient-to-b from-white to-transparent dark:from-slate-950"></div>
       </div>
       <ConversationHistorySkeleton />
-      <ChatInputSkeleton />
     </div>
   );
 }

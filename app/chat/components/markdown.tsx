@@ -29,7 +29,7 @@ const components: Components = {
   code: CodeBlock,
   h1: ({ children, ...props }: ComponentPropsWithoutRef<"h1">) => (
     <h1
-      className="my-4 text-2xl font-bold text-gray-900 dark:text-slate-100"
+      className="my-4 text-2xl font-bold text-gray-900 sm:text-3xl dark:text-slate-100"
       {...props}
     >
       {children}
@@ -37,7 +37,7 @@ const components: Components = {
   ),
   h2: ({ children, ...props }: ComponentPropsWithoutRef<"h2">) => (
     <h2
-      className="my-3 text-xl font-semibold text-gray-900 dark:text-slate-100"
+      className="my-3 text-xl font-semibold text-gray-900 sm:text-2xl dark:text-slate-100"
       {...props}
     >
       {children}
@@ -45,7 +45,7 @@ const components: Components = {
   ),
   h3: ({ children, ...props }: ComponentPropsWithoutRef<"h3">) => (
     <h3
-      className="my-2 text-lg font-medium text-gray-900 dark:text-slate-100"
+      className="my-2 text-lg font-medium text-gray-900 sm:text-xl dark:text-slate-100"
       {...props}
     >
       {children}
@@ -53,7 +53,7 @@ const components: Components = {
   ),
   h4: ({ children, ...props }: ComponentPropsWithoutRef<"h4">) => (
     <h4
-      className="my-2 text-base font-medium text-gray-900 dark:text-slate-100"
+      className="my-2 text-base font-medium text-gray-900 sm:text-lg dark:text-slate-100"
       {...props}
     >
       {children}
@@ -61,7 +61,7 @@ const components: Components = {
   ),
   h5: ({ children, ...props }: ComponentPropsWithoutRef<"h5">) => (
     <h5
-      className="my-2 text-sm font-medium text-gray-900 dark:text-slate-100"
+      className="my-2 text-sm font-medium text-gray-900 sm:text-base dark:text-slate-100"
       {...props}
     >
       {children}
@@ -69,7 +69,7 @@ const components: Components = {
   ),
   h6: ({ children, ...props }: ComponentPropsWithoutRef<"h6">) => (
     <h6
-      className="my-2 text-xs font-medium text-gray-900 dark:text-slate-100"
+      className="my-2 text-xs font-medium text-gray-900 sm:text-sm dark:text-slate-100"
       {...props}
     >
       {children}
@@ -98,7 +98,7 @@ const components: Components = {
   // 列表样式
   ul: ({ children, ...props }: ComponentPropsWithoutRef<"ul">) => (
     <ul
-      className="mb-4 list-outside list-disc space-y-1 pl-6 text-gray-800 dark:text-slate-200"
+      className="mb-4 list-outside list-disc space-y-1 pl-5 text-gray-800 sm:pl-6 dark:text-slate-200"
       {...props}
     >
       {children}
@@ -106,7 +106,7 @@ const components: Components = {
   ),
   ol: ({ children, ...props }: ComponentPropsWithoutRef<"ol">) => (
     <ol
-      className="mb-4 list-outside list-decimal space-y-1 pl-6 text-gray-800 dark:text-slate-200"
+      className="mb-4 list-outside list-decimal space-y-1 pl-5 text-gray-800 sm:pl-6 dark:text-slate-200"
       {...props}
     >
       {children}
@@ -123,7 +123,7 @@ const components: Components = {
     ...props
   }: ComponentPropsWithoutRef<"blockquote">) => (
     <blockquote
-      className="my-4 border-l-4 border-blue-500 bg-blue-50 py-2 pl-4 italic text-gray-800 dark:border-indigo-400 dark:bg-indigo-950/30 dark:text-slate-200"
+      className="my-4 border-l-4 border-blue-500 bg-blue-50 py-2 pl-3 italic text-gray-800 sm:py-3 sm:pl-4 dark:border-indigo-400 dark:bg-indigo-950/30 dark:text-slate-200"
       {...props}
     >
       {children}
@@ -154,14 +154,17 @@ const components: Components = {
   ),
   th: ({ children, ...props }: ComponentPropsWithoutRef<"th">) => (
     <th
-      className="px-4 py-2 text-left font-medium text-gray-900 dark:text-slate-100"
+      className="px-3 py-2 text-left font-medium text-gray-900 sm:px-4 dark:text-slate-100"
       {...props}
     >
       {children}
     </th>
   ),
   td: ({ children, ...props }: ComponentPropsWithoutRef<"td">) => (
-    <td className="px-4 py-2 text-gray-800 dark:text-slate-200" {...props}>
+    <td
+      className="px-3 py-2 text-gray-800 sm:px-4 dark:text-slate-200"
+      {...props}
+    >
       {children}
     </td>
   ),
@@ -178,7 +181,10 @@ const components: Components = {
   ),
   // 分割线样式
   hr: ({ ...props }: ComponentPropsWithoutRef<"hr">) => (
-    <hr className="my-6 border-gray-300 dark:border-gray-600" {...props} />
+    <hr
+      className="my-4 border-gray-300 sm:my-6 dark:border-gray-600"
+      {...props}
+    />
   ),
   // 分割线样式
   br: ({ ...props }: ComponentPropsWithoutRef<"br">) => (

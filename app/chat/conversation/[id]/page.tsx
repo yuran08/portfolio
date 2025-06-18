@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { ChatPageSkeleton } from "../../components/skeleton";
 import ClientPage from "../../client-page";
-import { getInitConversationReactNode } from "../../action";
+import InitialMessages from "./initial-messages";
 
 export default async function Conversation({
   params,
@@ -10,14 +10,14 @@ export default async function Conversation({
 }) {
   const { id: conversationId } = await params;
 
-  const initialMessages = await getInitConversationReactNode(conversationId);
-
   return (
-    <Suspense fallback={<ChatPageSkeleton />}>
-      <ClientPage
-        conversationId={conversationId}
-        initialMessages={initialMessages}
-      />
-    </Suspense>
+    <ClientPage
+      conversationId={conversationId}
+      initialMessages={
+        <Suspense key={conversationId} fallback={<ChatPageSkeleton />}>
+          <InitialMessages conversationId={conversationId} />
+        </Suspense>
+      }
+    />
   );
 }

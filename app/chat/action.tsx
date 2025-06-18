@@ -6,7 +6,7 @@ import {
   AssistantMessageWrapper,
   ToolMessageWrapper,
 } from "./components/message";
-import { Suspense, ReactNode } from "react";
+import { Suspense, ReactNode, use } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
@@ -16,6 +16,7 @@ import { CoreMessage, ToolResultPart } from "ai";
 import GetInitResponse from "./get-init-response";
 import { BaseToolResult, formatToolResult } from "./tools";
 import { MemoizedMarkdown } from "./components/markdown";
+import { taintUniqueValue } from "next/dist/server/app-render/rsc/taint";
 
 // 开始对话
 export const startConversation = async (message: string) => {
@@ -86,44 +87,6 @@ export const getLLMResponseReactNode = async (
 
   const { done: hasToolCall, value: firstChunk } = await llmGenerator.next();
 
-  // 递归式流式渲染组件
-  const StreamWithRecursion = async (props: { accumulator?: string }) => {
-    const currentAccumulator = props.accumulator || "";
-
-    // 从流中读取下一个片段
-    const { done, value } = await llmGenerator.next();
-
-    if (done && !currentAccumulator) {
-      return null;
-    }
-
-    // 如果流结束，返回最终结果
-    if (done && currentAccumulator && currentAccumulator !== "undefined") {
-      // 在创建消息前检查对话是否仍然存在，避免因异步删除产生脏数据
-      const conversation = await db.conversation.findById(conversationId);
-      if (!conversation) {
-        return null;
-      }
-
-      await db.message.create({
-        content: currentAccumulator,
-        role: "assistant",
-        conversationId,
-      });
-      return <MemoizedMarkdown block={currentAccumulator} />;
-    }
-
-    // 更新累积文本
-    const newAccumulator = currentAccumulator + value;
-
-    // 渲染当前文本，并设置下一次更新
-    return (
-      <Suspense fallback={<MemoizedMarkdown block={newAccumulator} />}>
-        <StreamWithRecursion accumulator={newAccumulator} />
-      </Suspense>
-    );
-  };
-
   const StreamWithToolCalls = async () => {
     const streamToolCalls = await toolCalls;
 
@@ -188,7 +151,11 @@ export const getLLMResponseReactNode = async (
       ) : (
         <AssistantMessageWrapper>
           <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
-            <StreamWithRecursion accumulator={firstChunk} />
+            <GetAIResponse
+              generator={llmGenerator}
+              conversationId={conversationId}
+              firstChunck={firstChunk}
+            />
           </Suspense>
         </AssistantMessageWrapper>
       )}
@@ -259,44 +226,6 @@ export const addToolResultForNextMessage = async (
   const llmReader = llm.textStream.getReader();
   const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
 
-  // 递归式流式渲染组件
-  const StreamWithRecursion = async (props: { accumulator?: string }) => {
-    const currentAccumulator = props.accumulator || "";
-
-    // 从流中读取下一个片段
-    const { done, value } = await llmGenerator.next();
-
-    if (done && !currentAccumulator) {
-      return null;
-    }
-
-    // 如果流结束，返回最终结果
-    if (done && currentAccumulator) {
-      // 在创建消息前检查对话是否仍然存在，避免因异步删除产生脏数据
-      const conversation = await db.conversation.findById(conversationId);
-      if (!conversation) {
-        return null;
-      }
-
-      await db.message.create({
-        content: currentAccumulator,
-        role: "assistant",
-        conversationId,
-      });
-      return <MemoizedMarkdown block={currentAccumulator} />;
-    }
-
-    // 更新累积文本
-    const newAccumulator = currentAccumulator + value;
-
-    // 渲染当前文本，并设置下一次更新
-    return (
-      <Suspense fallback={<MemoizedMarkdown block={newAccumulator} />}>
-        <StreamWithRecursion accumulator={newAccumulator} />
-      </Suspense>
-    );
-  };
-
   return (
     <>
       <ToolMessageWrapper>
@@ -309,7 +238,10 @@ export const addToolResultForNextMessage = async (
       </ToolMessageWrapper>
       <AssistantMessageWrapper>
         <Suspense fallback={<LoadingWithText text="正在等待工具调用结果..." />}>
-          <StreamWithRecursion />
+          <GetAIResponse
+            generator={llmGenerator}
+            conversationId={conversationId}
+          />
         </Suspense>
       </AssistantMessageWrapper>
     </>
@@ -386,6 +318,64 @@ export const getInitConversationReactNode = async (conversationId: string) => {
       })}
     </>
   );
+};
+
+const GetAIResponse = ({
+  generator,
+  conversationId,
+  firstChunck = "",
+}: {
+  generator: AsyncGenerator<string, void, unknown>;
+  conversationId: string;
+  firstChunck?: string;
+}) => {
+  const StreamWithBatchRecursion = async (props: {
+    accumulator?: string;
+    batchSize?: number;
+    depth?: number;
+  }) => {
+    const {
+      accumulator = firstChunck,
+      batchSize = 3, // 每次处理多个块
+      depth = 0, // 记录递归深度
+    } = props;
+
+    let currentAccumulator = accumulator;
+
+    // 批量处理多个块，减少递归深度
+    for (let i = 0; i < batchSize; i++) {
+      const { done, value } = await generator.next();
+
+      if (done) {
+        if (!currentAccumulator) return null;
+
+        const conversation = await db.conversation.findById(conversationId);
+        if (!conversation) return null;
+
+        await db.message.create({
+          content: currentAccumulator,
+          role: "assistant",
+          conversationId,
+        });
+
+        return <MemoizedMarkdown block={currentAccumulator} />;
+      }
+
+      currentAccumulator += value;
+    }
+
+    return (
+      <Suspense fallback={<MemoizedMarkdown block={currentAccumulator} />}>
+        <StreamWithBatchRecursion
+          accumulator={currentAccumulator}
+          batchSize={batchSize}
+          depth={depth + 1}
+        />
+      </Suspense>
+    );
+  };
+
+  return <StreamWithBatchRecursion />;
 };
 
 function createPromiseWithStatus<T>(promise: Promise<T>) {
