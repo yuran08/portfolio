@@ -6,6 +6,11 @@
 
 import { Redis, RedisOptions } from "ioredis";
 
+// 🚀 全局变量持久化 - 避免Next.js热重载时重新初始化
+const globalForRedis = global as unknown as {
+  redisConnectionPool: RedisConnectionPool;
+};
+
 /**
  * Redis 连接池管理器
  *
@@ -14,20 +19,16 @@ import { Redis, RedisOptions } from "ioredis";
  * 2. **连接复用**: 避免每次请求创建新连接，提高性能
  * 3. **优雅关闭**: 提供连接池关闭方法，支持应用优雅退出
  * 4. **错误恢复**: 内置重连机制和错误处理
+ * 5. **🚀 热重载兼容**: 使用全局变量避免开发环境重复初始化
  *
  * 【连接池优势】
  * - 减少连接创建/销毁开销
  * - 避免连接数过多导致 Redis 服务器压力
  * - 提供连接状态监控和管理
  * - 支持自动重连和故障恢复
+ * - 🚀 开发环境性能优化：避免热重载导致的重复连接
  */
 class RedisConnectionPool {
-  /**
-   * 单例实例
-   * @private
-   */
-  private static instance: RedisConnectionPool | null = null;
-
   /**
    * Redis 客户端实例
    * ioredis 本身就是连接池，单个实例内部管理多个连接
@@ -51,6 +52,9 @@ class RedisConnectionPool {
 
   /**
    * 获取连接池单例实例
+   * 
+   * 🚀 **热重载优化**: 在开发环境中，如果全局变量中已存在实例，直接复用，
+   * 避免每次热重载都重新创建连接池，大幅提升开发体验。
    *
    * @returns Redis 连接池实例
    *
@@ -61,12 +65,23 @@ class RedisConnectionPool {
    * ```
    */
   public static getInstance(): RedisConnectionPool {
-    if (!RedisConnectionPool.instance) {
-      RedisConnectionPool.instance = new RedisConnectionPool();
-      console.log("🏊 Redis 连接池初始化");
+    // 🚀 开发环境优化：复用全局缓存的连接池实例
+    if (process.env.NODE_ENV !== "production" && globalForRedis.redisConnectionPool) {
+      return globalForRedis.redisConnectionPool;
     }
 
-    return RedisConnectionPool.instance;
+    // 生产环境或首次创建
+    const instance = new RedisConnectionPool();
+
+    // 🚀 在开发环境中缓存到全局变量，避免热重载重新初始化
+    if (process.env.NODE_ENV !== "production") {
+      globalForRedis.redisConnectionPool = instance;
+      console.log("🏊 Redis 连接池初始化 (首次创建)");
+    } else {
+      console.log("🏊 Redis 连接池初始化 (生产环境)");
+    }
+
+    return instance;
   }
 
   /**
@@ -317,7 +332,12 @@ class RedisConnectionPool {
     } finally {
       // 清理资源
       this.client = null;
-      RedisConnectionPool.instance = null;
+
+      // 🚀 清理全局缓存 (仅开发环境)
+      if (process.env.NODE_ENV !== "production" && globalForRedis.redisConnectionPool === this) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        globalForRedis.redisConnectionPool = null as any;
+      }
     }
   }
 
