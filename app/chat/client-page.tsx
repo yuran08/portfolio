@@ -7,22 +7,31 @@ import {
   useRef,
   useOptimistic,
   startTransition,
+  Suspense,
+  useEffect,
 } from "react";
-import { conversationAddMessage } from "./action";
+import { conversationAddMessage, startConversation } from "./action";
 import ChatInput, { ChatInputRef } from "./chat-input";
 import { ConversationMessages } from "./conversation-messages";
 import { AwaitResponseMessageWrapper } from "./components/message";
+import { NewChatSkeleton } from "./components/skeleton";
+import Welcome from "./components/welcome";
+import { v4 as uuidv4 } from "uuid";
 
 export default function ClientPage({
   conversationId,
   initialMessages,
 }: {
-  conversationId: string;
-  initialMessages: ReactNode;
+  conversationId?: string;
+  initialMessages?: ReactNode;
 }) {
-  const [messagesNode, setMessagesNode] = useState<ReactNode[]>([
-    initialMessages,
-  ]);
+  const isMounted = useRef(false);
+
+  // 所有的 hooks 必须在条件性返回之前调用
+  const [currentConversationId, setCurrentConversationId] = useState(conversationId);
+  const [messagesNode, setMessagesNode] = useState<ReactNode[]>(
+    initialMessages ? [initialMessages] : []
+  );
   const chatInputRef = useRef<ChatInputRef>(null);
   const isSendMessage = useRef(false);
 
@@ -33,7 +42,7 @@ export default function ClientPage({
       // 在实际状态基础上添加乐观的用户消息
       return [
         ...state,
-        <AwaitResponseMessageWrapper key={Date.now()} input={optimisticUserMessage} />,
+        <AwaitResponseMessageWrapper key={`optimistic-${Date.now()}`} input={optimisticUserMessage} />,
       ];
     }
   );
@@ -52,7 +61,7 @@ export default function ClientPage({
 
       try {
         const newMessagesNode = await conversationAddMessage(
-          conversationId,
+          currentConversationId!,
           message
         );
 
@@ -68,18 +77,77 @@ export default function ClientPage({
         isSendMessage.current = false;
       }
     },
-    [conversationId, addOptimisticMessage]
+    [currentConversationId, addOptimisticMessage]
   );
+
+  useEffect(() => {
+    if (isMounted.current) return;
+    isMounted.current = true;
+    if (conversationId) {
+      setCurrentConversationId(conversationId);
+    }
+  }, [conversationId]);
+
+  const startConversationAction = async (formData: FormData) => {
+    const message = String(formData.get("message"))?.trim();
+    if (!message) return;
+
+    if (isSendMessage.current) return;
+    isSendMessage.current = true;
+
+    // 清空输入框
+    chatInputRef.current?.clearInput();
+
+    const newConversationId = uuidv4();
+
+    // 立即切换到新对话视图
+    setCurrentConversationId(newConversationId);
+    window.history.replaceState({}, "", `/chat/conversation/${newConversationId}`);
+
+    // 添加乐观消息 (用户消息 + AI响应等待状态)
+    addOptimisticMessage(message);
+
+    try {
+      // 异步创建对话并获取AI响应
+      const conversation = await startConversation(newConversationId, message);
+
+      // 使用startTransition更新实际消息状态，替换乐观消息
+      startTransition(() => {
+        setMessagesNode([conversation]);
+      });
+    } catch (error) {
+      console.error("❌ 创建对话失败:", error);
+
+      // 错误处理：移除乐观消息，显示错误
+      startTransition(() => {
+        setMessagesNode([]);
+      });
+    } finally {
+      isSendMessage.current = false;
+    }
+  };
+
+  // 条件性返回必须在所有 hooks 之后
+  if (!currentConversationId) {
+    return <Suspense fallback={<NewChatSkeleton />}>
+      <div className="flex h-full w-full flex-col items-center justify-center bg-white p-6 dark:bg-slate-950">
+        <div className="w-full max-w-3xl">
+          <Welcome />
+          <ChatInput ref={chatInputRef} action={startConversationAction} />
+        </div>
+      </div>
+    </Suspense>
+  }
 
   return (
     <div className="relative flex h-screen w-full flex-col bg-white dark:bg-slate-950">
       {/* 顶部渐变遮罩 */}
-      <div className="absolute left-0 top-0 z-30 box-border h-4 w-full bg-gradient-to-r from-white to-transparent px-6 dark:from-slate-950">
+      <div className="absolute left-0 top-0 z-10 box-border h-4 w-full bg-gradient-to-r from-white to-transparent px-6 dark:from-slate-950">
         <div className="h-full w-full bg-gradient-to-b from-white to-transparent dark:from-slate-950"></div>
       </div>
 
       <ConversationMessages
-        conversationId={conversationId}
+        conversationId={currentConversationId}
         initialMessages={optimisticMessages}
       />
 
@@ -87,7 +155,6 @@ export default function ClientPage({
         <div className="mx-auto max-w-3xl">
           <ChatInput
             ref={chatInputRef}
-            conversationId={conversationId}
             action={handleMessageSubmit}
           />
         </div>

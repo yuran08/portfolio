@@ -18,16 +18,18 @@ import { BaseToolResult, formatToolResult } from "./tools";
 import { MemoizedMarkdown } from "./components/markdown";
 
 // 开始对话
-export const startConversation = async (message: string) => {
-  const conversation = await db.conversation.create({
+export const startConversation = async (conversationId: string, message: string) => {
+  await db.conversation.create({
+    id: conversationId,
     title: message,
   });
-  await db.message.create({
-    content: message,
-    role: "user",
-    conversationId: conversation.id,
-  });
-  return conversation.id;
+
+  revalidatePath(`/chat`);
+  revalidatePath(`/chat/conversation/${conversationId}`);
+
+  const llmResponseReactNode = await conversationAddMessage(conversationId, message);
+
+  return llmResponseReactNode;
 };
 
 // 更新对话标题

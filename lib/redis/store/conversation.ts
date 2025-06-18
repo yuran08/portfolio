@@ -31,10 +31,10 @@ export class ConversationStore {
    * @returns Promise<RedisConversation> 创建的对话对象
    */
   static async create(
-    data: CreateConversationData
+    data: CreateConversationData & { id?: string }
   ): Promise<RedisConversation> {
     const redis = await getRedisConnection();
-    const conversationId = uuidv4();
+    const conversationId = data.id || uuidv4();
     const now = new Date().toLocaleString();
 
     const conversation: RedisConversation = {

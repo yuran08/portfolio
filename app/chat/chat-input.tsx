@@ -3,24 +3,19 @@
 import { Loader2 } from "lucide-react";
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import RenderFormPending from "./render-form-pending";
-import { startConversation } from "./action";
-import { useRouter } from "next/navigation";
 
 // 定义暴露的方法接口
 export interface ChatInputRef {
   clearInput: () => void;
-  focus: () => void;
 }
 
 const ChatInput = forwardRef<ChatInputRef, {
   action?: (formData: FormData) => void | Promise<void>;
-  conversationId?: string;
 }>(function ChatInput({ action }, ref) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isComposing, setIsComposing] = useState(false);
   const isSendMessage = useRef(false);
-  const router = useRouter();
 
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
@@ -30,29 +25,7 @@ const ChatInput = forwardRef<ChatInputRef, {
         adjustTextareaHeight();
       }
     },
-    focus: () => {
-      textareaRef.current?.focus();
-    }
   }));
-
-  // 默认的处理函数
-  const startConversationAction = async (formData: FormData) => {
-    const message = String(formData.get("message"))?.trim();
-    if (!message) return;
-
-    // 清空输入框
-    if (textareaRef.current) {
-      textareaRef.current.value = "";
-      adjustTextareaHeight();
-    }
-
-    if (isSendMessage.current) return;
-    isSendMessage.current = true;
-
-    const conversationId = await startConversation(message);
-    isSendMessage.current = false;
-    router.push(`/chat/conversation/${conversationId}`);
-  };
 
   const adjustTextareaHeight = () => {
     if (textareaRef.current) {
@@ -91,7 +64,7 @@ const ChatInput = forwardRef<ChatInputRef, {
     <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
       <form
         ref={formRef}
-        action={action || startConversationAction}
+        action={action}
         className="w-full rounded-xl border border-gray-200 bg-white p-3 shadow-lg sm:p-4 dark:border-slate-700/60 dark:bg-slate-900/90 dark:shadow-2xl dark:shadow-slate-950/50"
       >
         <textarea

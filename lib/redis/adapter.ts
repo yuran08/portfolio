@@ -200,9 +200,10 @@ export class RedisAdapter {
      * @param data - 对话创建数据
      * @returns Promise<Conversation> 创建的对话对象
      */
-    async create(data: { title: string }): Promise<Conversation> {
-      const createData: CreateConversationData = {
+    async create(data: { title: string; id?: string }): Promise<Conversation> {
+      const createData: CreateConversationData & { id?: string } = {
         title: data.title,
+        id: data.id,
       };
       const redisConversation = await ConversationStore.create(createData);
       return redisConversationToConversation(redisConversation);
