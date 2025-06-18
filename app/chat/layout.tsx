@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import { ThemeProvider } from "next-themes";
 import { HighlightThemeSwitcher } from "./highlight-theme-switcher";
@@ -8,16 +7,6 @@ import SideBar from "./sidebar/side-bar";
 import { SidebarSkeleton } from "./components/skeleton";
 import { headers } from "next/headers";
 import { getConversationList } from "./action";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "𝓎𝓇 𝒸𝒽𝒶𝓉",
@@ -37,39 +26,27 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
   const conversations = await getConversationList();
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* 移动端视口设置 */}
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-        />
-      </head>
-      {/* 为 Chat 添加 ThemeProvider，默认系统主题，无切换功能 */}
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        storageKey="chat-theme" // 使用不同的存储键，避免与 home 冲突
-      >
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} flex h-screen bg-white text-black antialiased dark:bg-slate-950 dark:text-slate-100`}
-        >
-          <HighlightThemeSwitcher />
-          {/* 通过key强制重新渲染Sidebar */}
-          <Suspense fallback={<SidebarSkeleton />}>
-            <SideBar
-              key={currentConversationId}
-              currentConversationId={currentConversationId}
-              conversations={conversations}
-            />
-          </Suspense>
-          {/* 主内容区域 - 在移动端占满屏幕，在桌面端留出侧边栏空间 */}
-          <main className="flex w-full flex-1 flex-col bg-white md:w-auto dark:bg-slate-950">
-            {children}
-          </main>
-        </body>
-      </ThemeProvider>
-    </html>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      storageKey="chat-theme" // 使用不同的存储键，避免与 home 冲突
+    >
+      <div className="flex h-screen bg-white text-black antialiased dark:bg-slate-950 dark:text-slate-100">
+        <HighlightThemeSwitcher />
+        {/* 通过key强制重新渲染Sidebar */}
+        <Suspense fallback={<SidebarSkeleton />}>
+          <SideBar
+            key={currentConversationId}
+            currentConversationId={currentConversationId}
+            conversations={conversations}
+          />
+        </Suspense>
+        {/* 主内容区域 - 在移动端占满屏幕，在桌面端留出侧边栏空间 */}
+        <main className="flex w-full flex-1 flex-col bg-white md:w-auto dark:bg-slate-950">
+          {children}
+        </main>
+      </div>
+    </ThemeProvider>
   );
 }
