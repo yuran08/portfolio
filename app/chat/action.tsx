@@ -6,7 +6,7 @@ import {
   AssistantMessageWrapper,
   ToolMessageWrapper,
 } from "./components/message";
-import { Suspense, ReactNode, use } from "react";
+import { Suspense, ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
@@ -16,7 +16,6 @@ import { CoreMessage, ToolResultPart } from "ai";
 import GetInitResponse from "./get-init-response";
 import { BaseToolResult, formatToolResult } from "./tools";
 import { MemoizedMarkdown } from "./components/markdown";
-import { taintUniqueValue } from "next/dist/server/app-render/rsc/taint";
 
 // 开始对话
 export const startConversation = async (message: string) => {

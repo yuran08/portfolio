@@ -1,5 +1,6 @@
 import { Sparkles, Wrench } from "lucide-react";
 import "katex/dist/katex.min.css";
+import { LoadingWithText } from "./skeleton";
 
 export const UserMessageWrapper = ({
   children,
@@ -54,5 +55,16 @@ export const ToolMessageWrapper = ({
         </div>
       </div>
     </div>
+  );
+};
+
+export const AwaitResponseMessageWrapper = ({ input }: { input: string }) => {
+  return (
+    <>
+      <UserMessageWrapper>{input}</UserMessageWrapper>
+      <AssistantMessageWrapper>
+        <LoadingWithText text="AI 正在思考..." />
+      </AssistantMessageWrapper>
+    </>
   );
 };

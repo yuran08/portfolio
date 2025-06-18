@@ -11,7 +11,7 @@ import {
 import { conversationAddMessage } from "./action";
 import ChatInput, { ChatInputRef } from "./chat-input";
 import { ConversationMessages } from "./conversation-messages";
-import { UserMessageWrapper } from "./components/message";
+import { AwaitResponseMessageWrapper } from "./components/message";
 
 export default function ClientPage({
   conversationId,
@@ -33,9 +33,7 @@ export default function ClientPage({
       // 在实际状态基础上添加乐观的用户消息
       return [
         ...state,
-        <UserMessageWrapper key={optimisticUserMessage}>
-          {optimisticUserMessage}
-        </UserMessageWrapper>,
+        <AwaitResponseMessageWrapper input={optimisticUserMessage} />,
       ];
     }
   );
