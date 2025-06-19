@@ -131,6 +131,7 @@ export default function ServerSideBar({
         </div>
 
         <NavigationButton
+          disabled={activeConversationId === "new-chat"}
           href="/chat"
           className="flex w-full items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-left font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
           onNavigation={() => {
@@ -159,11 +160,10 @@ export default function ServerSideBar({
                       onNavigation={() =>
                         handleConversationSelect(conversation.id)
                       }
-                      className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${
-                        conversation.id === activeConversationId
+                      className={`flex h-12 w-full items-center rounded px-3 py-2 text-left text-sm text-gray-900 transition-all duration-300 hover:bg-gray-200 dark:text-slate-200 dark:hover:bg-slate-800/70 ${conversation.id === activeConversationId
                           ? "bg-gray-200 dark:bg-slate-800/90"
                           : ""
-                      }`}
+                        }`}
                     >
                       <span className="truncate">{conversation.title}</span>
                     </NavigationButton>

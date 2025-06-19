@@ -24,12 +24,18 @@ export const startConversation = async (conversationId: string, message: string)
     title: message,
   });
 
-  revalidatePath(`/chat`);
+  await db.message.create({
+    content: message,
+    role: "user",
+    conversationId,
+  });
+
+  // const llmResponseReactNode = await conversationAddMessage(conversationId, message, false);
+
+  // 只在对话创建后才重新验证路径，避免过早的revalidation
   revalidatePath(`/chat/conversation/${conversationId}`);
 
-  const llmResponseReactNode = await conversationAddMessage(conversationId, message);
-
-  return llmResponseReactNode;
+  // return llmResponseReactNode;
 };
 
 // 更新对话标题
@@ -38,6 +44,7 @@ export const updateConversationTitle = async (
   title: string
 ) => {
   await db.conversation.update(conversationId, { title });
+  revalidatePath(`/chat`);
 };
 
 // 删除对话
@@ -50,7 +57,8 @@ export const deleteConversation = async (conversationId: string) => {
 // 添加消息
 export const conversationAddMessage = async (
   conversationId: string,
-  message: string
+  message: string,
+  shouldRevalidate: boolean = true
 ): Promise<ReactNode> => {
   await db.message.create({
     content: message,
@@ -58,8 +66,11 @@ export const conversationAddMessage = async (
     conversationId,
   });
   const messages = await db.message.findByConversationId(conversationId);
-  revalidatePath(`/chat`);
-  revalidatePath(`/chat/conversation/${conversationId}`);
+
+  if (shouldRevalidate) {
+    revalidatePath(`/chat/conversation/${conversationId}`);
+  }
+
   const llmResponseReactNode = await getLLMResponseReactNode(
     conversationId,
     messages
@@ -252,6 +263,8 @@ export const addToolResultForNextMessage = async (
 // 获取初始对话的React节点
 export const getInitConversationReactNode = async (conversationId: string) => {
   const messages = await db.message.findByConversationId(conversationId);
+  console.log("getInitConversationReactNode");
+
   if (messages.length === 0)
     return (
       <div

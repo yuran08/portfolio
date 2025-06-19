@@ -8,7 +8,6 @@ import {
   useOptimistic,
   startTransition,
   Suspense,
-  useEffect,
 } from "react";
 import { conversationAddMessage, startConversation } from "./action";
 import ChatInput, { ChatInputRef } from "./chat-input";
@@ -17,18 +16,18 @@ import { AwaitResponseMessageWrapper } from "./components/message";
 import { NewChatSkeleton } from "./components/skeleton";
 import Welcome from "./components/welcome";
 import { v4 as uuidv4 } from "uuid";
+import { useRouter } from "next/navigation";
 
 export default function ClientPage({
-  conversationId,
+  conversationId = '',
   initialMessages,
 }: {
   conversationId?: string;
   initialMessages?: ReactNode;
 }) {
-  const isMounted = useRef(false);
+  const router = useRouter();
 
   // 所有的 hooks 必须在条件性返回之前调用
-  const [currentConversationId, setCurrentConversationId] = useState(conversationId);
   const [messagesNode, setMessagesNode] = useState<ReactNode[]>(
     initialMessages ? [initialMessages] : []
   );
@@ -61,7 +60,7 @@ export default function ClientPage({
 
       try {
         const newMessagesNode = await conversationAddMessage(
-          currentConversationId!,
+          conversationId!,
           message
         );
 
@@ -77,16 +76,8 @@ export default function ClientPage({
         isSendMessage.current = false;
       }
     },
-    [currentConversationId, addOptimisticMessage]
+    [conversationId, addOptimisticMessage]
   );
-
-  useEffect(() => {
-    if (isMounted.current) return;
-    isMounted.current = true;
-    if (conversationId) {
-      setCurrentConversationId(conversationId);
-    }
-  }, [conversationId]);
 
   const startConversationAction = async (formData: FormData) => {
     const message = String(formData.get("message"))?.trim();
@@ -100,35 +91,27 @@ export default function ClientPage({
 
     const newConversationId = uuidv4();
 
-    // 立即切换到新对话视图
-    setCurrentConversationId(newConversationId);
-    window.history.replaceState({}, "", `/chat/conversation/${newConversationId}`);
-
     // 添加乐观消息 (用户消息 + AI响应等待状态)
     addOptimisticMessage(message);
 
     try {
       // 异步创建对话并获取AI响应
-      const conversation = await startConversation(newConversationId, message);
+      await startConversation(newConversationId, message);
 
-      // 使用startTransition更新实际消息状态，替换乐观消息
-      startTransition(() => {
-        setMessagesNode([conversation]);
-      });
+      // 等待状态更新完成后再更改URL，避免竞态条件
+      // setTimeout(() => {
+      router.replace(`/chat/conversation/${newConversationId}`);
+      // }, 0);
+
     } catch (error) {
       console.error("❌ 创建对话失败:", error);
-
-      // 错误处理：移除乐观消息，显示错误
-      startTransition(() => {
-        setMessagesNode([]);
-      });
     } finally {
       isSendMessage.current = false;
     }
   };
 
   // 条件性返回必须在所有 hooks 之后
-  if (!currentConversationId) {
+  if (optimisticMessages.length === 0) {
     return <Suspense fallback={<NewChatSkeleton />}>
       <div className="flex h-full w-full flex-col items-center justify-center bg-white p-6 dark:bg-slate-950">
         <div className="w-full max-w-3xl">
@@ -147,7 +130,7 @@ export default function ClientPage({
       </div>
 
       <ConversationMessages
-        conversationId={currentConversationId}
+        conversationId={conversationId}
         initialMessages={optimisticMessages}
       />
 
