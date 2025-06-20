@@ -1,6 +1,8 @@
 export default async function* ParseLLMReaderToMarkdownGenerator(
-  llmReader: ReadableStreamDefaultReader<string>
+  llmReader: ReadableStreamDefaultReader<string>,
 ) {
+  const minBufferLength = 8; // 最小缓冲区长度
+
   let buffer = ""; // 累积缓冲区
   let isMathInline = false;
   let isMathBlock = false;
@@ -64,6 +66,11 @@ export default async function* ParseLLMReaderToMarkdownGenerator(
         // 可能是 \( 或 \[ 的开始，等待下一个chunk
         continue;
       } else {
+        // 检查缓冲区长度是否达到最小要求
+        if (buffer.length < minBufferLength) {
+          // 缓冲区太小，继续累积
+          continue;
+        }
         // 正常输出
         yield buffer;
         buffer = "";

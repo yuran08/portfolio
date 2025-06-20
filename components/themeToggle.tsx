@@ -31,6 +31,8 @@ export default function ThemeToggle() {
       return;
     }
 
+    document.documentElement.style.viewTransitionName = "theme-transition";
+
     const transition = document.startViewTransition(() => {
       // 在这里切换主题
       // setTheme(newTheme); // 注意：setTheme 应该在动画完成或浏览器处理过渡时由 next-themes 完成
@@ -54,6 +56,7 @@ export default function ThemeToggle() {
       document.documentElement.style.removeProperty("--clip-y");
       document.documentElement.style.removeProperty("--clip-radius-start");
       document.documentElement.style.removeProperty("--clip-radius-end");
+      document.documentElement.style.viewTransitionName = "";
     });
   };
 

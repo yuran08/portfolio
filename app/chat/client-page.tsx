@@ -99,9 +99,7 @@ export default function ClientPage({
       await startConversation(newConversationId, message);
 
       // 等待状态更新完成后再更改URL，避免竞态条件
-      // setTimeout(() => {
       router.replace(`/chat/conversation/${newConversationId}`);
-      // }, 0);
 
     } catch (error) {
       console.error("❌ 创建对话失败:", error);

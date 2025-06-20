@@ -149,12 +149,13 @@
   }
 }
 
-::view-transition-old(root) {
+/* 只对主题切换的视图过渡应用扩散动画 */
+::view-transition-old(theme-transition) {
   animation: none; /* 旧视图不参与特殊动画，或可以设置为快速淡出 */
   z-index: 1; /* 确保旧视图在下方 */
 }
 
-::view-transition-new(root) {
+::view-transition-new(theme-transition) {
   animation: reveal-circle 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   z-index: 9999; /* 新视图在最上方 */
   mix-blend-mode: normal; /* 避免混合模式干扰 clip-path */

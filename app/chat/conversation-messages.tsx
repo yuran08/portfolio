@@ -75,8 +75,6 @@ export function ConversationMessages({
     // 依赖项为空数组，此Effect仅在组件挂载时运行一次
   }, [handleScroll]);
 
-  console.log("initialMessages conversation-messages", initialMessages);
-
   return (
     <div
       ref={messagesRef}

@@ -29,13 +29,6 @@ export const startConversation = async (conversationId: string, message: string)
     role: "user",
     conversationId,
   });
-
-  // const llmResponseReactNode = await conversationAddMessage(conversationId, message, false);
-
-  // 只在对话创建后才重新验证路径，避免过早的revalidation
-  revalidatePath(`/chat/conversation/${conversationId}`);
-
-  // return llmResponseReactNode;
 };
 
 // 更新对话标题
@@ -58,7 +51,6 @@ export const deleteConversation = async (conversationId: string) => {
 export const conversationAddMessage = async (
   conversationId: string,
   message: string,
-  shouldRevalidate: boolean = true
 ): Promise<ReactNode> => {
   await db.message.create({
     content: message,
@@ -67,14 +59,12 @@ export const conversationAddMessage = async (
   });
   const messages = await db.message.findByConversationId(conversationId);
 
-  if (shouldRevalidate) {
-    revalidatePath(`/chat/conversation/${conversationId}`);
-  }
-
   const llmResponseReactNode = await getLLMResponseReactNode(
     conversationId,
     messages
   );
+
+  revalidatePath(`/chat/conversation/${conversationId}`, "layout");
   return llmResponseReactNode;
 };
 
@@ -350,39 +340,37 @@ const GetAIResponse = ({
   }) => {
     const {
       accumulator = firstChunck,
-      batchSize = 3, // 每次处理多个块
       depth = 0, // 记录递归深度
     } = props;
 
     let currentAccumulator = accumulator;
 
     // 批量处理多个块，减少递归深度
-    for (let i = 0; i < batchSize; i++) {
-      const { done, value } = await generator.next();
+    const { done, value } = await generator.next();
 
-      if (done) {
-        if (!currentAccumulator) return null;
+    if (done) {
+      if (!currentAccumulator) return null;
 
-        const conversation = await db.conversation.findById(conversationId);
-        if (!conversation) return null;
+      const conversation = await db.conversation.findById(conversationId);
+      if (!conversation) return null;
 
-        await db.message.create({
-          content: currentAccumulator,
-          role: "assistant",
-          conversationId,
-        });
+      await db.message.create({
+        content: currentAccumulator,
+        role: "assistant",
+        conversationId,
+      });
 
-        return <MemoizedMarkdown block={currentAccumulator} />;
-      }
-
-      currentAccumulator += value;
+      return <MemoizedMarkdown block={currentAccumulator} />;
     }
+
+    currentAccumulator += value;
+
+    console.log(value, "; depth", depth);
 
     return (
       <Suspense fallback={<MemoizedMarkdown block={currentAccumulator} />}>
         <StreamWithBatchRecursion
           accumulator={currentAccumulator}
-          batchSize={batchSize}
           depth={depth + 1}
         />
       </Suspense>

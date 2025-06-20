@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, unstable_ViewTransition as ViewTransition } from "react";
 import Link from "next/link";
 
 interface NavigationButtonProps {
@@ -32,20 +32,23 @@ export function NavigationButton({
   };
 
   return (
-    <Link
-      href={href}
-      onClick={handleClick}
-      aria-disabled={isPending || disabled}
-      className={`${className} ${isPending || disabled ? "pointer-events-none opacity-50" : ""}`}
-    >
-      {isPending ? (
-        <div className="flex items-center space-x-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-          <span>加载中...</span>
-        </div>
-      ) : (
-        children
-      )}
-    </Link>
+    <ViewTransition name={href}>
+      <Link
+        href={href}
+        onClick={handleClick}
+        aria-disabled={isPending || disabled}
+        className={`${className} ${isPending || disabled ? "pointer-events-none opacity-50" : ""}`}
+      >
+        {isPending ? (
+          <div className="flex items-center space-x-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+            <span>加载中...</span>
+          </div>
+        ) : (
+          children
+        )}
+      </Link>
+    </ViewTransition>
+
   );
 }
