@@ -44,5 +44,5 @@ export default function StreamHandler({
     };
   }, [generator, conversationId, initialContent]);
 
-  return <MemoizedMarkdown block={content} />;
+  return <MemoizedMarkdown id={conversationId} content={content} />;
 }

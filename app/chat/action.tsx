@@ -212,7 +212,8 @@ export const addToolResultForNextMessage = async (
       <>
         <ToolMessageWrapper>
           <MemoizedMarkdown
-            block={formatToolResult(
+            id={(content as ToolResultPart[])[0].toolCallId}
+            content={formatToolResult(
               (content as ToolResultPart[])[0].toolName,
               (content as ToolResultPart[])[0].result
             )}
@@ -237,7 +238,8 @@ export const addToolResultForNextMessage = async (
     <>
       <ToolMessageWrapper>
         <MemoizedMarkdown
-          block={formatToolResult(
+          id={(content as ToolResultPart[])[0].toolCallId}
+          content={formatToolResult(
             (content as ToolResultPart[])[0].toolName,
             (content as ToolResultPart[])[0].result
           )}
@@ -258,7 +260,6 @@ export const addToolResultForNextMessage = async (
 // 获取初始对话的React节点
 export const getInitConversationReactNode = async (conversationId: string) => {
   const messages = await db.message.findByConversationId(conversationId);
-  console.log("getInitConversationReactNode");
 
   if (messages.length === 0)
     return (
@@ -297,7 +298,8 @@ export const getInitConversationReactNode = async (conversationId: string) => {
           return (
             <AssistantMessageWrapper key={message.id}>
               <MemoizedMarkdown
-                block={message.content || "## 系统错误，请重试"}
+                id={message.id}
+                content={message.content || "## 系统错误，请重试"}
               />
             </AssistantMessageWrapper>
           );
@@ -314,7 +316,8 @@ export const getInitConversationReactNode = async (conversationId: string) => {
                 {tools.map((item, index) => (
                   <MemoizedMarkdown
                     key={`${item.toolName}-${index}`}
-                    block={formatToolResult(item.toolName, item.result)}
+                    id={message.id}
+                    content={formatToolResult(item.toolName, item.result)}
                   />
                 ))}
               </ToolMessageWrapper>

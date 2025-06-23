@@ -1,11 +1,11 @@
 import ReactMarkdown, { Components } from "react-markdown";
+import { marked } from "marked";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
-import { ComponentPropsWithoutRef, FC, memo } from "react";
-import { Message } from "../type";
+import { ComponentPropsWithoutRef, memo, useMemo } from "react";
 import "katex/dist/katex.min.css";
 import CodeBlock from "./code-block";
 
@@ -192,24 +192,55 @@ const components: Components = {
   ),
 };
 
-const markdown = ({ block }: { block: Message["content"] }) => {
-  return (
-    <div className="markdown-content">
+function parseMarkdownIntoBlocks(markdown: string): string[] {
+  const tokens = marked.lexer(markdown);
+  return tokens.map((token) => token.raw);
+}
+
+const MemoizedMarkdownBlock = memo(
+  ({ content }: { content: string }) => {
+    return (
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeHighlight, rehypeKatex, rehypeRaw]}
-        key={Math.random()}
         components={components}
       >
-        {preprocessLaTeX(block as string)}
+        {preprocessLaTeX(content)}
       </ReactMarkdown>
-    </div>
-  );
-};
-
-export const MemoizedMarkdown: FC<{
-  block: Message["content"];
-}> = memo(
-  markdown,
-  (prevProps, nextProps) => prevProps.block === nextProps.block
+    );
+  },
+  (prevProps, nextProps) => {
+    if (prevProps.content !== nextProps.content) return false;
+    return true;
+  }
 );
+
+MemoizedMarkdownBlock.displayName = "MemoizedMarkdownBlock";
+
+export const MemoizedMarkdown = memo(
+  ({ content, id }: { content: string; id: string }) => {
+    const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
+    console.log(blocks, "blocks");
+
+    return blocks.map((block, index) => (
+      <MemoizedMarkdownBlock content={block} key={`${id}-block_${index}`} />
+    ));
+  }
+);
+
+MemoizedMarkdown.displayName = "MemoizedMarkdown";
+
+// const markdown = ({ markdown }: { markdown: Message["content"] }) => {
+//   return (
+//     <div className="markdown-content">
+//       <ReactMarkdown
+//         remarkPlugins={[remarkGfm, remarkMath]}
+//         rehypePlugins={[rehypeHighlight, rehypeKatex, rehypeRaw]}
+//         key={Math.random()}
+//         components={components}
+//       >
+//         {preprocessLaTeX(markdown as string)}
+//       </ReactMarkdown>
+//     </div>
+//   );
+// };
