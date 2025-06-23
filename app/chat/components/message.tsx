@@ -27,7 +27,7 @@ export const AssistantMessageWrapper = ({
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white sm:h-8 sm:w-8">
           <Sparkles size={14} className="sm:size-4" />
         </div>
-        <div className="min-w-0 flex-1 rounded-2xl bg-gray-50 px-3 py-2 shadow-sm sm:px-4 sm:py-3 dark:bg-slate-800/80">
+        <div className="min-w-0 flex-1 rounded-2xl px-3 sm:px-4">
           <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
             {children}
           </div>

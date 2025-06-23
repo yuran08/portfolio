@@ -184,7 +184,7 @@ export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex h-7 items-center sm:h-8">
       <div
         className={`animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-slate-600 dark:border-t-indigo-400 ${sizeClasses[size]}`}
       ></div>
@@ -200,10 +200,5 @@ export function LoadingWithText({
   text?: string;
   size?: "sm" | "md" | "lg";
 }) {
-  return (
-    <div className="flex items-center justify-center space-x-2">
-      <LoadingSpinner size={size} />
-      <span className="text-sm text-gray-600 dark:text-slate-400">{text}</span>
-    </div>
-  );
+  return <LoadingSpinner size={size} />;
 }

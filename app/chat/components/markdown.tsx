@@ -220,7 +220,6 @@ MemoizedMarkdownBlock.displayName = "MemoizedMarkdownBlock";
 export const MemoizedMarkdown = memo(
   ({ content, id }: { content: string; id: string }) => {
     const blocks = useMemo(() => parseMarkdownIntoBlocks(content), [content]);
-    console.log(blocks, "blocks");
 
     return blocks.map((block, index) => (
       <MemoizedMarkdownBlock content={block} key={`${id}-block_${index}`} />
@@ -229,18 +228,3 @@ export const MemoizedMarkdown = memo(
 );
 
 MemoizedMarkdown.displayName = "MemoizedMarkdown";
-
-// const markdown = ({ markdown }: { markdown: Message["content"] }) => {
-//   return (
-//     <div className="markdown-content">
-//       <ReactMarkdown
-//         remarkPlugins={[remarkGfm, remarkMath]}
-//         rehypePlugins={[rehypeHighlight, rehypeKatex, rehypeRaw]}
-//         key={Math.random()}
-//         components={components}
-//       >
-//         {preprocessLaTeX(markdown as string)}
-//       </ReactMarkdown>
-//     </div>
-//   );
-// };

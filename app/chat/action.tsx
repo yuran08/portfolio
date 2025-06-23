@@ -260,6 +260,7 @@ export const addToolResultForNextMessage = async (
 // 获取初始对话的React节点
 export const getInitConversationReactNode = async (conversationId: string) => {
   const messages = await db.message.findByConversationId(conversationId);
+  console.log(messages, "messages");
 
   if (messages.length === 0)
     return (
