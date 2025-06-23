@@ -3,6 +3,7 @@
 import { CoreMessage, streamText } from "ai";
 import { deepseek } from "@ai-sdk/deepseek";
 import { aiTools } from "../tools";
+import db from "@/lib/redis";
 
 const systemPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"。今天的日期是${new Date().toLocaleString()}。
 
@@ -49,12 +50,26 @@ const systemPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"�
 /**
  * 创建带工具的LLM流式响应
  */
-export const createLLMStream = async (messages: CoreMessage[]) => {
+export const createLLMStream = async (
+  messages: CoreMessage[],
+  conversationId: string
+) => {
   const llm = streamText({
     model: deepseek("deepseek-chat"),
     system: systemPrompt,
     messages,
     tools: aiTools,
+    onFinish: (result) => {
+      const { text } = result;
+
+      if (text) {
+        db.message.create({
+          content: text,
+          role: "assistant",
+          conversationId,
+        });
+      }
+    },
   });
 
   return llm;

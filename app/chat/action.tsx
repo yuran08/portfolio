@@ -13,12 +13,16 @@ import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
 import { LoadingWithText, ErrorText } from "./components/skeleton";
 import { createLLMStream } from "./lib/llm";
 import { CoreMessage, ToolResultPart } from "ai";
-import GetInitResponse from "./get-init-response";
+import GetNextResponse from "./get-next-response";
 import { BaseToolResult, formatToolResult } from "./tools";
 import { MemoizedMarkdown } from "./components/markdown";
+import StreamHandler from "./components/stream-handler";
 
 // 开始对话
-export const startConversation = async (conversationId: string, message: string) => {
+export const startConversation = async (
+  conversationId: string,
+  message: string
+) => {
   await db.conversation.create({
     id: conversationId,
     title: message,
@@ -50,7 +54,7 @@ export const deleteConversation = async (conversationId: string) => {
 // 添加消息
 export const conversationAddMessage = async (
   conversationId: string,
-  message: string,
+  message: string
 ): Promise<ReactNode> => {
   await db.message.create({
     content: message,
@@ -80,14 +84,15 @@ export const getLLMResponseReactNode = async (
   messages: Message[]
 ): Promise<ReactNode> => {
   const { textStream, toolCalls, toolResults } = await createLLMStream(
-    messages as CoreMessage[]
+    messages as CoreMessage[],
+    conversationId
   );
   const llmReader = textStream.getReader();
   const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
 
   const wrappedToolResults = createPromiseWithStatus(toolResults);
 
-  const { done: hasToolCall, value: firstChunk } = await llmGenerator.next();
+  const { done: hasToolCall, value: firstChunck } = await llmGenerator.next();
 
   const StreamWithToolCalls = async () => {
     const streamToolCalls = await toolCalls;
@@ -153,10 +158,10 @@ export const getLLMResponseReactNode = async (
       ) : (
         <AssistantMessageWrapper>
           <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
-            <GetAIResponse
+            <StreamHandler
               generator={llmGenerator}
               conversationId={conversationId}
-              firstChunck={firstChunk}
+              initialContent={firstChunck}
             />
           </Suspense>
         </AssistantMessageWrapper>
@@ -224,7 +229,7 @@ export const addToolResultForNextMessage = async (
       content: message.content,
     })
   );
-  const llm = await createLLMStream(messages as CoreMessage[]);
+  const llm = await createLLMStream(messages as CoreMessage[], conversationId);
   const llmReader = llm.textStream.getReader();
   const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
 
@@ -240,7 +245,7 @@ export const addToolResultForNextMessage = async (
       </ToolMessageWrapper>
       <AssistantMessageWrapper>
         <Suspense fallback={<LoadingWithText text="正在等待工具调用结果..." />}>
-          <GetAIResponse
+          <StreamHandler
             generator={llmGenerator}
             conversationId={conversationId}
           />
@@ -267,7 +272,7 @@ export const getInitConversationReactNode = async (conversationId: string) => {
 
   if (messages.length === 1)
     return (
-      <GetInitResponse
+      <GetNextResponse
         key={conversationId}
         conversationId={conversationId}
         messages={messages}
@@ -322,62 +327,6 @@ export const getInitConversationReactNode = async (conversationId: string) => {
       })}
     </>
   );
-};
-
-const GetAIResponse = ({
-  generator,
-  conversationId,
-  firstChunck = "",
-}: {
-  generator: AsyncGenerator<string, void, unknown>;
-  conversationId: string;
-  firstChunck?: string;
-}) => {
-  const StreamWithBatchRecursion = async (props: {
-    accumulator?: string;
-    batchSize?: number;
-    depth?: number;
-  }) => {
-    const {
-      accumulator = firstChunck,
-      depth = 0, // 记录递归深度
-    } = props;
-
-    let currentAccumulator = accumulator;
-
-    // 批量处理多个块，减少递归深度
-    const { done, value } = await generator.next();
-
-    if (done) {
-      if (!currentAccumulator) return null;
-
-      const conversation = await db.conversation.findById(conversationId);
-      if (!conversation) return null;
-
-      await db.message.create({
-        content: currentAccumulator,
-        role: "assistant",
-        conversationId,
-      });
-
-      return <MemoizedMarkdown block={currentAccumulator} />;
-    }
-
-    currentAccumulator += value;
-
-    console.log(value, "; depth", depth);
-
-    return (
-      <Suspense fallback={<MemoizedMarkdown block={currentAccumulator} />}>
-        <StreamWithBatchRecursion
-          accumulator={currentAccumulator}
-          depth={depth + 1}
-        />
-      </Suspense>
-    );
-  };
-
-  return <StreamWithBatchRecursion />;
 };
 
 function createPromiseWithStatus<T>(promise: Promise<T>) {

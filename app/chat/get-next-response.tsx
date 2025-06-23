@@ -9,7 +9,7 @@ import {
 } from "./components/message";
 import { LoadingWithText, ErrorText } from "./components/skeleton";
 
-export default function GetInitResponse({
+export default function GetNextResponse({
   conversationId,
   messages,
 }: {
