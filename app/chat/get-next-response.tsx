@@ -8,6 +8,8 @@ import {
   AssistantMessageWrapper,
 } from "./components/message";
 import { LoadingWithText, ErrorText } from "./components/skeleton";
+import { ConversationTitleLLM } from "./lib/llm";
+import { CoreMessage } from "ai";
 
 export default function GetNextResponse({
   conversationId,
@@ -41,6 +43,7 @@ export default function GetNextResponse({
           setError(err instanceof Error ? err.message : "获取响应失败");
         }
       } finally {
+        ConversationTitleLLM(messages as CoreMessage[], conversationId);
         if (isMounted.current) {
           setIsLoading(false);
         }

@@ -1,11 +1,12 @@
 "use server";
 
-import { CoreMessage, streamText } from "ai";
+import { CoreMessage, generateText, streamText } from "ai";
 import { deepseek } from "@ai-sdk/deepseek";
 import { aiTools } from "../tools";
 import db from "@/lib/redis";
+import { updateConversationTitle } from "../action";
 
-const systemPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"。今天的日期是${new Date().toLocaleString()}。
+const AssistantAndToolsPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"。今天的日期是${new Date().toLocaleString()}。
 
 # 核心能力
 
@@ -48,15 +49,15 @@ const systemPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"�
 记住：你的目标是成为用户最可靠的智能助手，主动使用工具能力，提供超越预期的优质回答。`;
 
 /**
- * 创建带工具的LLM流式响应
+ * 创建带工具的LLM流式响应，用于回答用户问题
  */
-export const createLLMStream = async (
+export const AssistantAndToolsLLM = async (
   messages: CoreMessage[],
   conversationId: string
 ) => {
   const llm = streamText({
     model: deepseek("deepseek-chat"),
-    system: systemPrompt,
+    system: AssistantAndToolsPrompt,
     messages,
     tools: aiTools,
     onFinish: (result) => {
@@ -73,4 +74,21 @@ export const createLLMStream = async (
   });
 
   return llm;
+};
+
+/**
+ * 创建对话标题LLM响应，用于创建对话标题
+ */
+export const ConversationTitleLLM = async (
+  message: CoreMessage[],
+  conversationId: string
+) => {
+  const { text } = await generateText({
+    model: deepseek("deepseek-chat"),
+    system:
+      '你是一个对话标题生成专家。请根据用户的第一条消息，生成一个能够准确概括对话主题的标题。标题要求：\n1. 简洁明了，不超过15个汉字或30个英文字符\n2. 能够反映对话的核心主题或问题\n3. 避免使用过于笼统的词语（如"问题讨论"、"技术咨询"等）\n4. 不要包含任何额外解释、标点或修饰词\n5. 直接输出标题文本，不要有任何前缀（如"标题："）',
+    messages: message,
+  });
+
+  await updateConversationTitle(conversationId, text);
 };

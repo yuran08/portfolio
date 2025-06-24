@@ -11,7 +11,7 @@ import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
 import { LoadingWithText, ErrorText } from "./components/skeleton";
-import { createLLMStream } from "./lib/llm";
+import { AssistantAndToolsLLM, ConversationTitleLLM } from "./lib/llm";
 import { CoreMessage, ToolResultPart } from "ai";
 import GetNextResponse from "./get-next-response";
 import { BaseToolResult, formatToolResult } from "./tools";
@@ -25,7 +25,7 @@ export const startConversation = async (
 ) => {
   await db.conversation.create({
     id: conversationId,
-    title: message,
+    title: "",
   });
 
   await db.message.create({
@@ -41,14 +41,12 @@ export const updateConversationTitle = async (
   title: string
 ) => {
   await db.conversation.update(conversationId, { title });
-  revalidatePath(`/chat`);
+  revalidatePath(`/chat/conversation/${conversationId}`);
 };
 
 // 删除对话
 export const deleteConversation = async (conversationId: string) => {
   await db.conversation.delete(conversationId);
-  revalidatePath(`/chat`);
-  revalidatePath(`/chat/conversation/${conversationId}`);
 };
 
 // 添加消息
@@ -83,7 +81,7 @@ export const getLLMResponseReactNode = async (
   conversationId: string,
   messages: Message[]
 ): Promise<ReactNode> => {
-  const { textStream, toolCalls, toolResults } = await createLLMStream(
+  const { textStream, toolCalls, toolResults } = await AssistantAndToolsLLM(
     messages as CoreMessage[],
     conversationId
   );
@@ -230,7 +228,10 @@ export const addToolResultForNextMessage = async (
       content: message.content,
     })
   );
-  const llm = await createLLMStream(messages as CoreMessage[], conversationId);
+  const llm = await AssistantAndToolsLLM(
+    messages as CoreMessage[],
+    conversationId
+  );
   const llmReader = llm.textStream.getReader();
   const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
 
@@ -260,7 +261,7 @@ export const addToolResultForNextMessage = async (
 // 获取初始对话的React节点
 export const getInitConversationReactNode = async (conversationId: string) => {
   const messages = await db.message.findByConversationId(conversationId);
-  console.log(messages, "messages");
+  // console.log(messages, "messages");
 
   if (messages.length === 0)
     return (

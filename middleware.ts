@@ -26,25 +26,10 @@ export function middleware(request: NextRequest) {
     ];
 
     response.headers.set("Link", highlightPreloads.join(", "));
-
-    // 2.3 记录访问日志（开发环境）
-    // if (process.env.NODE_ENV === "development") {
-    //   console.log(`🚀 [Middleware] Chat访问: ${pathname}`);
-    //   console.log(`🎨 [Middleware] Highlight.js预加载已设置`);
-    // }
   }
 
   // 3. 性能监控 - 添加请求时间戳
   response.headers.set("x-middleware-timestamp", Date.now().toString());
-
-  // 4. 开发环境调试信息
-  // if (process.env.NODE_ENV === "development") {
-  //   response.headers.set("x-debug-info", JSON.stringify({
-  //     pathname,
-  //     userAgent: request.headers.get("user-agent"),
-  //     timestamp: new Date().toLocaleString(),
-  //   }));
-  // }
 
   return response;
 }
