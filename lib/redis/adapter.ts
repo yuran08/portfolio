@@ -305,15 +305,6 @@ export class RedisAdapter {
     },
 
     /**
-     * 修复对话排序
-     *
-     * @returns Promise<void>
-     */
-    async fixSorting(): Promise<void> {
-      return await ConversationStore.fixConversationSorting();
-    },
-
-    /**
      * 获取对话统计信息
      *
      * @returns Promise<{ total: number; recentCount: number }>
