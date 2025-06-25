@@ -189,17 +189,15 @@ export const formatSearchResultsToMarkdown = (searchResponse: {
     url: string;
   }>;
 }): string => {
-  let markdown = `## 🌐 网络搜索结果\n\n`;
+  let markdown = `### 🌐 网络搜索结果\n\n`;
 
   if (searchResponse.results.length === 0) {
     markdown += "暂无搜索结果。\n\n";
     return markdown;
   }
 
-  markdown += `### 📚 详细结果 (${searchResponse.results.length}个)\n\n`;
-
   searchResponse.results.forEach((result, index: number) => {
-    markdown += `#### ${index + 1}. ${result.title}  `;
+    markdown += `##### ${index + 1}. ${result.title}  `;
 
     if (result.url) {
       markdown += `🔗 [查看原文](${result.url})\n\n`;

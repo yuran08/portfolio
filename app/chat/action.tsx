@@ -47,6 +47,7 @@ export const updateConversationTitle = async (
 // 删除对话
 export const deleteConversation = async (conversationId: string) => {
   await db.conversation.delete(conversationId);
+  revalidatePath(`/chat`);
 };
 
 // 添加消息
