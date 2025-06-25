@@ -7,7 +7,7 @@ import {
   UserMessageWrapper,
   AssistantMessageWrapper,
 } from "./components/message";
-import { LoadingWithText, ErrorText } from "./components/skeleton";
+import { ErrorText, LoadingSpinner } from "./components/skeleton";
 import { ConversationTitleLLM } from "./lib/llm";
 import { CoreMessage } from "ai";
 
@@ -63,7 +63,7 @@ export default function GetNextResponse({
       <>
         <UserMessageWrapper>{messages[0].content as string}</UserMessageWrapper>
         <AssistantMessageWrapper>
-          <LoadingWithText text="AI 正在思考..." />
+          <LoadingSpinner size="sm" />
         </AssistantMessageWrapper>
       </>
     );
