@@ -191,14 +191,3 @@ export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
     </div>
   );
 }
-
-// 带文字的加载组件
-export function LoadingWithText({
-  text = "加载中...",
-  size = "md",
-}: {
-  text?: string;
-  size?: "sm" | "md" | "lg";
-}) {
-  return <LoadingSpinner size={size} />;
-}

@@ -10,8 +10,8 @@ import { Suspense, ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
-import { LoadingWithText, ErrorText } from "./components/skeleton";
-import { AssistantAndToolsLLM, ConversationTitleLLM } from "./lib/llm";
+import { ErrorText, LoadingSpinner } from "./components/skeleton";
+import { AssistantAndToolsLLM } from "./lib/llm";
 import { CoreMessage, ToolResultPart } from "ai";
 import GetNextResponse from "./get-next-response";
 import { BaseToolResult, formatToolResult } from "./tools";
@@ -111,7 +111,7 @@ export const getLLMResponseReactNode = async (
           <Suspense
             fallback={
               <ToolMessageWrapper>
-                <LoadingWithText text={`🔧正在执行 ${toolName} 工具...`} />
+                <LoadingSpinner size="sm" />
               </ToolMessageWrapper>
             }
           >
@@ -148,7 +148,7 @@ export const getLLMResponseReactNode = async (
         <Suspense
           fallback={
             <ToolMessageWrapper>
-              <LoadingWithText text={`🔧正在识别工具调用...`} />
+              <LoadingSpinner size="sm" />
             </ToolMessageWrapper>
           }
         >
@@ -156,7 +156,7 @@ export const getLLMResponseReactNode = async (
         </Suspense>
       ) : (
         <AssistantMessageWrapper>
-          <Suspense fallback={<LoadingWithText text="AI 正在思考..." />}>
+          <Suspense fallback={<LoadingSpinner size="sm" />}>
             <StreamHandler
               generator={llmGenerator}
               conversationId={conversationId}
@@ -248,7 +248,7 @@ export const addToolResultForNextMessage = async (
         />
       </ToolMessageWrapper>
       <AssistantMessageWrapper>
-        <Suspense fallback={<LoadingWithText text="正在等待工具调用结果..." />}>
+        <Suspense fallback={<LoadingSpinner size="sm" />}>
           <StreamHandler
             generator={llmGenerator}
             conversationId={conversationId}
