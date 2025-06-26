@@ -11,7 +11,7 @@ import { revalidatePath } from "next/cache";
 import { Message } from "./type";
 import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
 import { ErrorText, LoadingSpinner } from "./components/skeleton";
-import { AssistantAndToolsLLM } from "./lib/llm";
+import { AssistantAndToolsLLM, AssistantAndToolsLLMTest } from "./lib/llm";
 import { CoreMessage, ToolResultPart } from "ai";
 import GetNextResponse from "./get-next-response";
 import { BaseToolResult, formatToolResult } from "./tools";
@@ -25,7 +25,7 @@ export const startConversation = async (
 ) => {
   await db.conversation.create({
     id: conversationId,
-    title: "",
+    title: message,
   });
 
   await db.message.create({
@@ -82,6 +82,8 @@ export const getLLMResponseReactNode = async (
   conversationId: string,
   messages: Message[]
 ): Promise<ReactNode> => {
+  await AssistantAndToolsLLMTest(messages as CoreMessage[], conversationId);
+  return null;
   const { textStream, toolCalls, toolResults } = await AssistantAndToolsLLM(
     messages as CoreMessage[],
     conversationId
