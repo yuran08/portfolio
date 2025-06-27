@@ -5,7 +5,6 @@ import { deepseek } from "@ai-sdk/deepseek";
 import { aiTools } from "../tools";
 import db from "@/lib/redis";
 import { updateConversationTitle } from "../action";
-import { read } from "fs";
 
 const AssistantAndToolsPrompt = `你是一个专业的AI助手，名称为"yr-chat助手"。今天的日期是${new Date().toLocaleString()}。
 
@@ -105,20 +104,15 @@ export const AssistantAndToolsLLMTest = async (
         system: AssistantAndToolsPrompt,
         messages,
         tools: aiTools,
-        onChunk: ({ chunk }) => {
-          // if (chunk.type === "text-delta") {
-          //   dataStream.writeData(chunk.textDelta);
-          // }
-        },
         onFinish: (result) => {
           const { text } = result;
 
           if (text) {
-            // db.message.create({
-            //   content: text,
-            //   role: "assistant",
-            //   conversationId,
-            // });
+            db.message.create({
+              content: text,
+              role: "assistant",
+              conversationId,
+            });
           }
         },
       });
