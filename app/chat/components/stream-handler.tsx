@@ -2,47 +2,88 @@
 
 import { useEffect, useState } from "react";
 import { MemoizedMarkdown } from "./markdown";
+import { getAiResponseStream } from "../lib/ai/stream";
+import { LoadingSpinner } from "./skeleton";
+import { safeJsonParse } from "../lib/json";
+import { ToolCall } from "ai";
+
+// const typeMap = {
+//   "0": "text",
+//   "2": "data",
+//   "3": "error",
+//   "8": "message_annotations",
+//   "9": "tool_call",
+//   a: "tool_result",
+//   b: "tool_call_streaming_start",
+//   c: "tool_call_delta",
+//   d: "finish_message",
+//   e: "finish_step",
+//   f: "start_step",
+//   g: "reasoning",
+//   h: "source",
+//   i: "redacted_reasoning",
+//   j: "reasoning_signature",
+//   k: "file",
+// } as const;
 
 export default function StreamHandler({
-  generator,
+  stream,
   conversationId,
-  initialContent = "",
 }: {
-  generator: AsyncGenerator<string, void, unknown>;
+  stream: Awaited<ReturnType<typeof getAiResponseStream>>;
   conversationId: string;
-  initialContent?: string;
 }) {
-  const [content, setContent] = useState(initialContent);
+  const [content, setContent] = useState("");
+  const [toolCall, setToolCall] = useState<ToolCall<string, unknown>>();
 
   useEffect(() => {
     let isMounted = true;
-    let fullContent = initialContent;
+    let fullContent = "";
 
-    const processGenerator = async () => {
+    const processStream = async () => {
+      const reader = stream.getReader();
       try {
         while (true) {
-          const { done, value } = await generator.next();
+          const { done, value } = await reader.read();
 
-          if (done) {
+          if (!value || done) {
+            reader.cancel();
             break;
           }
 
-          if (value && isMounted) {
-            fullContent += value;
+          console.log(value, "value");
+
+          if (value.startsWith("9")) {
+            const toolCall = safeJsonParse(value.slice(2)) as ToolCall<
+              string,
+              unknown
+            >;
+            setToolCall(toolCall);
+          }
+
+          if (value.startsWith("0")) {
+            const text = safeJsonParse(value.slice(2));
+            fullContent += text;
             setContent(fullContent);
           }
         }
       } catch (error) {
-        console.error("Generator处理错误:", error);
+        console.error("Stream处理错误:", error);
       }
     };
 
-    processGenerator();
+    processStream();
 
     return () => {
       isMounted = false;
     };
-  }, [generator, conversationId, initialContent]);
+  }, [stream, conversationId]);
 
-  return <MemoizedMarkdown id={conversationId} content={content} />;
+  return content || toolCall ? (
+    <>
+      <MemoizedMarkdown id={conversationId} content={content} />
+    </>
+  ) : (
+    <LoadingSpinner size="sm" />
+  );
 }

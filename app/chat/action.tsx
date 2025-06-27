@@ -6,17 +6,15 @@ import {
   AssistantMessageWrapper,
   ToolMessageWrapper,
 } from "./components/message";
-import { Suspense, ReactNode } from "react";
+import { ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
-import ParseLLMReaderToMarkdownGenerator from "./lib/parser";
-import { ErrorText, LoadingSpinner } from "./components/skeleton";
-import { AssistantAndToolsLLM, AssistantAndToolsLLMTest } from "./lib/llm";
-import { CoreMessage, ToolResultPart } from "ai";
+import { ToolResultPart } from "ai";
 import GetNextResponse from "./get-next-response";
-import { BaseToolResult, formatToolResult } from "./tools";
+import { formatToolResult } from "./tools";
 import { MemoizedMarkdown } from "./components/markdown";
-import StreamHandler from "./components/stream-handler";
+import { getAiResponseStream } from "./lib/ai/stream";
+import MessageGroup from "./components/message-group";
 
 // 开始对话
 export const startConversation = async (
@@ -25,7 +23,7 @@ export const startConversation = async (
 ) => {
   await db.conversation.create({
     id: conversationId,
-    title: message,
+    title: "",
   });
 
   await db.message.create({
@@ -82,182 +80,13 @@ export const getLLMResponseReactNode = async (
   conversationId: string,
   messages: Message[]
 ): Promise<ReactNode> => {
-  await AssistantAndToolsLLMTest(messages as CoreMessage[], conversationId);
-  return null;
-  const { textStream, toolCalls, toolResults } = await AssistantAndToolsLLM(
-    messages as CoreMessage[],
-    conversationId
-  );
-  const llmReader = textStream.getReader();
-  const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
-
-  const wrappedToolResults = createPromiseWithStatus(toolResults);
-
-  const { done: hasToolCall, value: firstChunck } = await llmGenerator.next();
-
-  const StreamWithToolCalls = async () => {
-    const streamToolCalls = await toolCalls;
-
-    await db.message.create({
-      content: JSON.stringify(streamToolCalls),
-      role: "assistant",
-      conversationId,
-    });
-
-    const toolName = streamToolCalls[0].toolName;
-
-    // 递归处理工具调用结果
-    const ProcessToolResults = async () => {
-      if (wrappedToolResults.isPending) {
-        return (
-          <Suspense
-            fallback={
-              <ToolMessageWrapper>
-                <LoadingSpinner size="sm" />
-              </ToolMessageWrapper>
-            }
-          >
-            <ProcessToolResults />
-          </Suspense>
-        );
-      }
-
-      if (wrappedToolResults.isFulfilled) {
-        const result = await wrappedToolResults.wrappedPromise;
-        const llmResponseReactNode = await addToolResultForNextMessage(
-          conversationId,
-          result
-        );
-        return llmResponseReactNode;
-      }
-
-      return (
-        <ToolMessageWrapper>
-          <ErrorText text={`工具调用失败: ${toolName}`} />
-        </ToolMessageWrapper>
-      );
-    };
-
-    return <ProcessToolResults />;
-  };
-
+  const stream = await getAiResponseStream(conversationId, messages);
   return (
-    <>
-      <UserMessageWrapper>
-        {messages[messages.length - 1].content as string}
-      </UserMessageWrapper>
-      {hasToolCall ? (
-        <Suspense
-          fallback={
-            <ToolMessageWrapper>
-              <LoadingSpinner size="sm" />
-            </ToolMessageWrapper>
-          }
-        >
-          <StreamWithToolCalls />
-        </Suspense>
-      ) : (
-        <AssistantMessageWrapper>
-          <Suspense fallback={<LoadingSpinner size="sm" />}>
-            <StreamHandler
-              generator={llmGenerator}
-              conversationId={conversationId}
-              initialContent={firstChunck}
-            />
-          </Suspense>
-        </AssistantMessageWrapper>
-      )}
-    </>
-  );
-};
-
-// 获取工具调用结果
-export const addToolResultForNextMessage = async (
-  conversationId: string,
-  content: Message["content"]
-) => {
-  // 检查工具是否需要AI进一步处理结果
-  let requiresFollowUp = true;
-
-  // 提取renderData字段进行存储，减少数据库内存压力
-  const extractRenderData = (toolResults: ToolResultPart[]) => {
-    return toolResults.map((toolResult) => {
-      const result = toolResult.result as BaseToolResult;
-
-      // 检查工具是否需要AI后续处理
-      // 当前最多只有一个toolcall，若增加多个需要修改判断逻辑
-      if (result.requiresFollowUp === false) {
-        requiresFollowUp = false;
-      }
-
-      return {
-        type: toolResult.type,
-        toolCallId: toolResult.toolCallId,
-        toolName: toolResult.toolName,
-        result: result.renderData, // 只存储渲染必要的数据
-      };
-    });
-  };
-
-  const optimizedContent = extractRenderData(content as ToolResultPart[]);
-
-  await db.message.create({
-    content: JSON.stringify(optimizedContent),
-    role: "tool",
-    conversationId,
-  });
-
-  // 如果工具不需要AI进一步处理，直接返回工具结果
-  if (!requiresFollowUp) {
-    return (
-      <>
-        <ToolMessageWrapper>
-          <MemoizedMarkdown
-            id={(content as ToolResultPart[])[0].toolCallId}
-            content={formatToolResult(
-              (content as ToolResultPart[])[0].toolName,
-              (content as ToolResultPart[])[0].result
-            )}
-          />
-        </ToolMessageWrapper>
-      </>
-    );
-  }
-
-  const messages = (await db.message.findByConversationId(conversationId)).map(
-    (message) => ({
-      id: message.id,
-      role: message.role,
-      content: message.content,
-    })
-  );
-  const llm = await AssistantAndToolsLLM(
-    messages as CoreMessage[],
-    conversationId
-  );
-  const llmReader = llm.textStream.getReader();
-  const llmGenerator = ParseLLMReaderToMarkdownGenerator(llmReader);
-
-  return (
-    <>
-      <ToolMessageWrapper>
-        <MemoizedMarkdown
-          id={(content as ToolResultPart[])[0].toolCallId}
-          content={formatToolResult(
-            (content as ToolResultPart[])[0].toolName,
-            (content as ToolResultPart[])[0].result
-          )}
-        />
-      </ToolMessageWrapper>
-      <AssistantMessageWrapper>
-        <Suspense fallback={<LoadingSpinner size="sm" />}>
-          <StreamHandler
-            generator={llmGenerator}
-            conversationId={conversationId}
-          />
-        </Suspense>
-      </AssistantMessageWrapper>
-    </>
+    <MessageGroup
+      userMessage={messages[messages.length - 1].content as string}
+      stream={stream}
+      conversationId={conversationId}
+    />
   );
 };
 
@@ -336,31 +165,3 @@ export const getInitConversationReactNode = async (conversationId: string) => {
     </>
   );
 };
-
-function createPromiseWithStatus<T>(promise: Promise<T>) {
-  let status = "pending";
-
-  const wrappedPromise = promise.then(
-    (value) => {
-      status = "fulfilled";
-      return value;
-    },
-    (error) => {
-      status = "rejected";
-      throw error;
-    }
-  );
-
-  return {
-    get isPending() {
-      return status === "pending";
-    },
-    get isFulfilled() {
-      return status === "fulfilled";
-    },
-    get isRejected() {
-      return status === "rejected";
-    },
-    wrappedPromise,
-  };
-}
