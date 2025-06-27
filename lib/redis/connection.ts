@@ -29,201 +29,131 @@ const globalForRedis = global as unknown as {
  * - 🚀 开发环境性能优化：避免热重载导致的重复连接
  */
 class RedisConnectionPool {
-  /**
-   * Redis 客户端实例
-   * ioredis 本身就是连接池，单个实例内部管理多个连接
-   * @private
-   */
+  // 单例模式实例
+  private static instance: RedisConnectionPool;
+
+  // Redis 客户端实例
   private client: Redis | null = null;
 
-  /**
-   * 连接状态标识
-   * @private
-   */
+  // 连接创建中的 Promise
+  private connectingPromise: Promise<Redis> | null = null;
+
+  // 连接状态
   private isConnected: boolean = false;
 
   /**
-   * 私有构造函数，防止外部直接实例化
-   * @private
+   * 私有构造函数，防止外部实例化
    */
-  private constructor() {
-    // 构造函数为空，连接在 getConnection 时创建
-  }
+  private constructor() {}
 
   /**
-   * 获取连接池单例实例
-   * 
-   * 🚀 **热重载优化**: 在开发环境中，如果全局变量中已存在实例，直接复用，
-   * 避免每次热重载都重新创建连接池，大幅提升开发体验。
-   *
-   * @returns Redis 连接池实例
-   *
-   * @example
-   * ```typescript
-   * const pool = RedisConnectionPool.getInstance();
-   * const client = await pool.getConnection();
-   * ```
+   * 获取 RedisConnectionPool 单例实例
    */
   public static getInstance(): RedisConnectionPool {
-    // 🚀 开发环境优化：复用全局缓存的连接池实例
-    if (process.env.NODE_ENV !== "production" && globalForRedis.redisConnectionPool) {
-      return globalForRedis.redisConnectionPool;
+    if (!RedisConnectionPool.instance) {
+      RedisConnectionPool.instance = new RedisConnectionPool();
     }
-
-    // 生产环境或首次创建
-    const instance = new RedisConnectionPool();
-
-    // 🚀 在开发环境中缓存到全局变量，避免热重载重新初始化
-    if (process.env.NODE_ENV !== "production") {
-      globalForRedis.redisConnectionPool = instance;
-      console.log("🏊 Redis 连接池初始化 (首次创建)");
-    } else {
-      console.log("🏊 Redis 连接池初始化 (生产环境)");
-    }
-
-    return instance;
+    return RedisConnectionPool.instance;
   }
 
   /**
    * 获取 Redis 连接
-   *
-   * 【工作原理】
-   * 1. 检查现有连接是否可用
-   * 2. 如果没有连接，创建新的连接
-   * 3. 设置连接事件监听器
-   * 4. 返回可用的连接实例
-   *
-   * @returns Promise<Redis> Redis 客户端实例
-   * @throws 连接失败时抛出错误
+   * 异步模式：不阻塞调用方，连接将在后台初始化
    */
   public async getConnection(): Promise<Redis> {
-    // 如果已有连接且状态正常，直接返回
+    // 已连接，直接返回
     if (this.client && this.isConnected) {
       return this.client;
     }
 
-    // 创建新连接
-    if (!this.client) {
-      // 配置连接选项
-      const options: RedisOptions = {
-        // 连接池配置
-        maxRetriesPerRequest: 3,
-        lazyConnect: true, // 延迟连接，只有在首次使用时才建立连接
-        family: 4, // IPv4
-        keepAlive: 30000, // 保持连接活跃 (30秒)
-
-        // 🚀 启用自动Pipeline，提升批量操作性能
-        enableAutoPipelining: true,
-
-        // 重连策略：指数退避算法
-        retryStrategy: (times: number): number => {
-          const delay = Math.min(times * 50, 2000);
-          console.log(`🔄 Redis 重连尝试 #${times}, 延迟 ${delay}ms`);
-          return delay;
-        },
-
-        // 基于错误类型的重连策略
-        reconnectOnError: (err: Error): boolean => {
-          const targetError = "READONLY";
-          if (err.message.includes(targetError)) {
-            console.log("🔄 检测到 READONLY 错误，触发重连");
-            return true;
-          }
-          return false;
-        },
-      };
-
-      // 创建 Redis 客户端实例
-      if (process.env.REDIS_URL) {
-        // 使用 Redis URL
-        this.client = new Redis(process.env.REDIS_URL, options);
-      } else {
-        // 使用默认本地配置
-        this.client = new Redis({
-          ...options,
-          host: "localhost",
-          port: 6379,
-          db: 0,
-        });
-      }
-
-      this.setupEventListeners();
+    // 连接创建中，等待已存在的 Promise
+    if (this.connectingPromise) {
+      return this.connectingPromise;
     }
 
-    // 确保连接已建立
-    if (!this.isConnected) {
-      try {
-        await this.client.ping();
-        this.isConnected = true;
-      } catch (error) {
-        console.error("❌ Redis 连接失败:", error);
-        throw new Error(
-          `Redis 连接失败: ${error instanceof Error ? error.message : "未知错误"}`
-        );
-      }
-    }
+    // 创建新的连接 Promise
+    this.connectingPromise = this.createConnection();
 
-    return this.client;
+    try {
+      // 等待连接建立
+      const client = await this.connectingPromise;
+      return client;
+    } catch (error) {
+      // 连接失败，清空 Promise 以便于重试
+      this.connectingPromise = null;
+      throw error;
+    }
   }
 
   /**
-   * 设置连接事件监听器
-   *
-   * 【监听的事件】
-   * - connect: 连接建立
-   * - ready: 连接就绪（可以接收命令）
-   * - error: 连接错误
-   * - close: 连接关闭
-   * - reconnecting: 重连中
-   * - end: 连接结束
-   *
-   * @private
+   * 创建新的 Redis 连接
+   * 返回 Promise，以支持异步连接
+   */
+  private async createConnection(): Promise<Redis> {
+    try {
+      // 检查是否已有连接
+      if (this.client && this.isConnected) {
+        return this.client;
+      }
+
+      // 创建 Redis 客户端
+      const redisUrl = process.env.REDIS_URL;
+      if (!redisUrl) {
+        throw new Error("缺少 REDIS_URL 环境变量");
+      }
+
+      const options: RedisOptions = {
+        maxRetriesPerRequest: 3,
+        connectTimeout: 5000,
+        enableReadyCheck: true,
+        autoResubscribe: true,
+      };
+
+      // 创建客户端
+      this.client = new Redis(redisUrl, options);
+
+      // 设置事件监听器
+      this.setupEventListeners();
+
+      // 返回客户端，不等待连接完成
+      return this.client;
+    } catch (error) {
+      console.error("Redis 连接初始化失败:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 设置事件监听器
    */
   private setupEventListeners(): void {
     if (!this.client) return;
 
-    // 连接建立事件
     this.client.on("connect", () => {
-      // 连接建立时的静默日志
+      console.log("✅ Redis 连接已建立");
     });
 
-    // 连接就绪事件（可以开始发送命令）
     this.client.on("ready", () => {
       this.isConnected = true;
+      console.log("✅ Redis 连接就绪");
     });
 
-    // 连接错误事件
     this.client.on("error", (error) => {
-      this.isConnected = false;
-      console.error("❌ Redis 连接错误:", error.message);
-
-      // 可以在这里添加错误报告逻辑
-      // 例如：发送到监控系统、记录日志等
+      console.error("❌ Redis 连接错误:", error);
     });
 
-    // 连接关闭事件
     this.client.on("close", () => {
       this.isConnected = false;
-      console.log("🔌 Redis 连接已关闭");
+      console.log("⚠️ Redis 连接已关闭");
     });
 
-    // 重连事件
-    this.client.on("reconnecting", (ms: number) => {
-      this.isConnected = false;
-      console.log(`🔄 Redis 正在重连... (${ms}ms 后重试)`);
-    });
-
-    // 连接结束事件
-    this.client.on("end", () => {
-      this.isConnected = false;
-      console.log("🔚 Redis 连接已结束");
+    this.client.on("reconnecting", () => {
+      console.log("⏳ Redis 正在重新连接...");
     });
   }
 
   /**
-   * 获取连接状态
-   *
-   * @returns boolean 连接是否就绪
+   * 检查连接状态
    */
   public isConnectionReady(): boolean {
     return this.isConnected && this.client !== null;
@@ -334,7 +264,10 @@ class RedisConnectionPool {
       this.client = null;
 
       // 🚀 清理全局缓存 (仅开发环境)
-      if (process.env.NODE_ENV !== "production" && globalForRedis.redisConnectionPool === this) {
+      if (
+        process.env.NODE_ENV !== "production" &&
+        globalForRedis.redisConnectionPool === this
+      ) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         globalForRedis.redisConnectionPool = null as any;
       }
@@ -364,45 +297,23 @@ class RedisConnectionPool {
 }
 
 /**
- * 获取 Redis 连接的便捷函数
+ * 获取 Redis 连接
  *
- * 这是应用程序的主要入口点，其他模块通过此函数获取 Redis 连接
- *
- * @returns Promise<Redis> Redis 客户端实例
- *
- * @example
- * ```typescript
- * import { getRedisConnection } from '@/lib/redis/connection';
- *
- * const redis = await getRedisConnection();
- * await redis.set('key', 'value');
- * const value = await redis.get('key');
- * ```
+ * 对外暴露的异步获取连接函数，不阻塞渲染
  */
 export const getRedisConnection = async (): Promise<Redis> => {
-  const pool = RedisConnectionPool.getInstance();
-  return await pool.getConnection();
+  return RedisConnectionPool.getInstance().getConnection();
 };
 
 /**
  * 测试 Redis 连接
- *
- * @returns Promise<boolean> 连接测试结果
  */
 export const testRedisConnection = async (): Promise<boolean> => {
   try {
     const redis = await getRedisConnection();
-    const result = await redis.ping();
-
-    if (result === "PONG") {
-      console.log("✅ Redis 连接测试成功");
-      return true;
-    } else {
-      console.error("❌ Redis ping 响应异常:", result);
-      return false;
-    }
+    await redis.ping();
+    return true;
   } catch (error) {
-    console.error("❌ Redis 连接测试失败:", error);
     return false;
   }
 };
