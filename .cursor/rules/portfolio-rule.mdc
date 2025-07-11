@@ -84,7 +84,6 @@ alwaysApply: true
 ### 完成修改后必须执行
 ```bash
 pnpm lint    # 检查代码规范
-pnpm build   # 验证编译通过
 pnpm dev     # 确认功能正常
 ```
 

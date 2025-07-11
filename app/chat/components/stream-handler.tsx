@@ -37,7 +37,6 @@ export default function StreamHandler({
   const [toolCall, setToolCall] = useState<ToolCall<string, unknown>>();
 
   useEffect(() => {
-    let isMounted = true;
     let fullContent = "";
 
     const processStream = async () => {
@@ -75,7 +74,7 @@ export default function StreamHandler({
     processStream();
 
     return () => {
-      isMounted = false;
+      // Clean up if needed
     };
   }, [stream, conversationId]);
 
