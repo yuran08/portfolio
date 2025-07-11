@@ -1,20 +1,22 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import {
-  useRef,
-  useEffect,
-  useState,
-  forwardRef,
-  useImperativeHandle,
-  FormEvent,
-} from "react";
-import RenderFormPending from "../render-form-pending";
+import { useRef, useEffect, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { SubmitBtn } from "./submit-btn";
+import { ModelSwitcher } from "./model-switcher";
 
 const ChatInput = ({
-  handleSubmit,
+  sendMessage,
+  model,
+  setModel,
+  isLoading,
+  stop,
 }: {
-  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  sendMessage: ReturnType<typeof useChat>["sendMessage"];
+  model: "deepseek-chat" | "deepseek-reasoner";
+  setModel: (model: "deepseek-chat" | "deepseek-reasoner") => void;
+  stop: ReturnType<typeof useChat>["stop"];
+  isLoading: boolean;
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -59,7 +61,31 @@ const ChatInput = ({
       <form
         ref={formRef}
         className="w-full rounded-xl border border-gray-200 bg-white p-3 shadow-lg sm:p-4 dark:border-slate-700/60 dark:bg-slate-900/90 dark:shadow-2xl dark:shadow-slate-950/50"
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          const message = textareaRef.current?.value;
+          if (!message || message.trim() === "") {
+            return;
+          }
+          e.preventDefault();
+          textareaRef.current!.value = "";
+          sendMessage(
+            {
+              id: Date.now().toString(),
+              role: "user",
+              parts: [
+                {
+                  type: "text",
+                  text: message,
+                },
+              ],
+            },
+            {
+              body: {
+                model,
+              },
+            }
+          );
+        }}
       >
         <textarea
           ref={textareaRef}
@@ -73,45 +99,10 @@ const ChatInput = ({
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
         />
-        <div className="mt-2 flex items-center justify-end">
+        <div className="mt-2 flex items-center justify-between">
+          <ModelSwitcher model={model} setModel={setModel} />
           {/* 提交按钮 */}
-          <button
-            type="submit"
-            className="flex items-center justify-center rounded-full bg-blue-500 p-2 text-white transition-colors duration-200 hover:bg-blue-600 active:scale-95 sm:p-2.5 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-          >
-            <RenderFormPending
-              pendingNode={<Loader2 className="h-4 w-4 animate-spin" />}
-              notPendingNode={
-                <svg
-                  width="14"
-                  height="16"
-                  viewBox="0 0 14 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3.5 w-3.5 sm:h-4 sm:w-4"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M7 16c-.595 0-1.077-.462-1.077-1.032V1.032C5.923.462 6.405 0 7 0s1.077.462 1.077 1.032v13.936C8.077 15.538 7.595 16 7 16z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M.315 7.44a1.002 1.002 0 0 1 0-1.46L6.238.302a1.11 1.11 0 0 1 1.523 0c.421.403.421 1.057 0 1.46L1.838 7.44a1.11 1.11 0 0 1-1.523 0z"
-                    fill="currentColor"
-                  ></path>
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M13.685 7.44a1.11 1.11 0 0 1-1.523 0L6.238 1.762a1.002 1.002 0 0 1 0-1.46 1.11 1.11 0 0 1 1.523 0l5.924 5.678c.42.403.42 1.056 0 1.46z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
-              }
-            />
-          </button>
+          <SubmitBtn isLoading={isLoading} stop={stop} />
         </div>
       </form>
     </div>

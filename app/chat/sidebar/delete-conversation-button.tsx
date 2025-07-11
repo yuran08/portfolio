@@ -1,7 +1,6 @@
 "use client";
 
 import { Trash2, Loader2 } from "lucide-react";
-import { deleteConversation } from "../action";
 import { useFormStatus } from "react-dom";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -34,7 +33,7 @@ export function DeleteConversationButton({
 
   const handleDelete = async () => {
     try {
-      await deleteConversation(conversationId);
+      // await deleteConversation(conversationId);
 
       // 从路径中提取当前对话ID
       // 路径格式：/chat/conversation/{id} 或 /chat

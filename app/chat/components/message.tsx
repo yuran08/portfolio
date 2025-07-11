@@ -1,6 +1,5 @@
 import { Sparkles, Wrench } from "lucide-react";
 import "katex/dist/katex.min.css";
-import { LoadingSpinner } from "./skeleton";
 
 export const UserMessageWrapper = ({
   children,
@@ -11,6 +10,25 @@ export const UserMessageWrapper = ({
     <div className="mt-4 flex justify-end px-2 sm:mt-6 sm:px-0">
       <div className="max-w-[85%] rounded-2xl bg-blue-600 px-3 py-2 text-white shadow-lg sm:max-w-[80%] sm:px-4 sm:py-3 dark:bg-blue-500">
         <div className="prose prose-invert prose-sm max-w-none">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+export const ReasoningMessageWrapper = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  return (
+    <div className="mb-2 mt-4 px-2 sm:px-0">
+      <div className="border-l-2 border-gray-300 pl-4 text-sm text-gray-500 dark:border-gray-700 dark:text-slate-500">
+        <div className="prose prose-sm max-w-none">
+          <p className="mb-1 text-xs font-medium text-gray-500 dark:text-slate-500">
+            推理过程：
+          </p>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -55,16 +73,5 @@ export const ToolMessageWrapper = ({
         </div>
       </div>
     </div>
-  );
-};
-
-export const AwaitResponseMessageWrapper = ({ input }: { input: string }) => {
-  return (
-    <>
-      <UserMessageWrapper>{input}</UserMessageWrapper>
-      <AssistantMessageWrapper>
-        <LoadingSpinner size="sm" />
-      </AssistantMessageWrapper>
-    </>
   );
 };

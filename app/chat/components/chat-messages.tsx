@@ -2,9 +2,23 @@
 
 import { useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { ChevronDown } from "lucide-react";
-import { ClientMessage } from "../action";
+import { UIMessage } from "ai";
+import {
+  UserMessageWrapper,
+  AssistantMessageWrapper,
+  ReasoningMessageWrapper,
+} from "./message";
+import { useChat } from "@ai-sdk/react";
+import { Spinner } from "./loading";
+import { MemoizedMarkdown } from "./markdown";
 
-export function ChatMessages({ messages }: { messages: ClientMessage[] }) {
+export function ChatMessages({
+  messages,
+  status,
+}: {
+  messages: UIMessage[];
+  status: ReturnType<typeof useChat>["status"];
+}) {
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const hasInitiallyScrolled = useRef(false); // 用于跟踪是否已执行初始滚动
@@ -72,11 +86,42 @@ export function ChatMessages({ messages }: { messages: ClientMessage[] }) {
     >
       <div className="mx-auto max-w-3xl">
         <div className="w-full">
-          <ul>
-            {messages.map((message) => (
-              <li key={message.id}>{message.display}</li>
-            ))}
-          </ul>
+          {messages.map((message) => (
+            <div key={message.id}>
+              {message.role === "user" ? (
+                <UserMessageWrapper>
+                  {message.parts
+                    .map((part, index) =>
+                      part.type === "text" ? part.text : null
+                    )
+                    .join("")}
+                </UserMessageWrapper>
+              ) : (
+                <AssistantMessageWrapper>
+                  {message.parts.map((part, index) =>
+                    part.type === "reasoning" ? (
+                      <ReasoningMessageWrapper key={index}>
+                        {part.text}
+                      </ReasoningMessageWrapper>
+                    ) : null
+                  )}
+                  <MemoizedMarkdown
+                    id={message.id}
+                    content={message.parts
+                      .map((part, index) =>
+                        part.type === "text" ? part.text : null
+                      )
+                      .join("")}
+                  />
+                </AssistantMessageWrapper>
+              )}
+            </div>
+          ))}
+          {status === "submitted" && (
+            <AssistantMessageWrapper>
+              <Spinner />
+            </AssistantMessageWrapper>
+          )}
         </div>
       </div>
 
