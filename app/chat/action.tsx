@@ -9,12 +9,15 @@ import {
 import { ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { Message } from "./type";
-import { ToolResultPart } from "ai";
+import { convertToModelMessages, ToolResultPart } from "ai";
 import GetNextResponse from "./get-next-response";
 import { formatToolResult } from "./tools";
 import { MemoizedMarkdown } from "./components/markdown";
 import { getAiResponseStream } from "./lib/ai/stream";
 import MessageGroup from "./components/message-group";
+import { getAIState, getMutableAIState, streamUI } from "@ai-sdk/rsc";
+import { aiProvider } from "./lib/ai/provider";
+import { LoadingSpinner } from "./components/skeleton";
 
 // 开始对话
 export const startConversation = async (
@@ -164,4 +167,45 @@ export const getInitConversationReactNode = async (conversationId: string) => {
       })}
     </>
   );
+};
+
+// Define the AI state and UI state types
+export type ServerMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ClientMessage = {
+  id: string;
+  role: "user" | "assistant";
+  display: ReactNode;
+};
+
+export const sendMessage = async (input: string): Promise<ReactNode> => {
+  const history = getMutableAIState();
+  history.update([...history.get(), { role: "user", content: input }]);
+  const messageId = String(Date.now());
+
+  const result = await streamUI({
+    model: aiProvider.languageModel("chat-model"),
+    initial: (
+      <AssistantMessageWrapper>
+        <LoadingSpinner />
+      </AssistantMessageWrapper>
+    ),
+    text: ({ content, done }) => {
+      if (done) {
+        history.done([...history.get(), { role: "assistant", content }]);
+      }
+
+      return (
+        <AssistantMessageWrapper>
+          <MemoizedMarkdown id={messageId} content={content} />
+        </AssistantMessageWrapper>
+      );
+    },
+    messages: history.get(),
+  });
+
+  return result.value;
 };

@@ -1,6 +1,6 @@
 "use server";
 
-import { CoreMessage, createDataStream, generateText, streamText } from "ai";
+import { CoreMessage, generateText, streamText } from "ai";
 import { deepseek } from "@ai-sdk/deepseek";
 import { aiTools } from "../tools";
 import db from "@/lib/redis";
@@ -97,50 +97,4 @@ export const ConversationTitleLLM = async (
 export const AssistantAndToolsLLMTest = async (
   messages: CoreMessage[],
   conversationId: string
-) => {
-  const stream = createDataStream({
-    execute: (dataStream) => {
-      const result = streamText({
-        model: deepseek("deepseek-chat"),
-        system: AssistantAndToolsPrompt,
-        messages,
-        tools: aiTools,
-        onChunk: ({ chunk }) => {
-          // if (chunk.type === "text-delta") {
-          //   dataStream.writeData(chunk.textDelta);
-          // }
-        },
-        onFinish: (result) => {
-          const { text } = result;
-
-          if (text) {
-            // db.message.create({
-            //   content: text,
-            //   role: "assistant",
-            //   conversationId,
-            // });
-          }
-        },
-      });
-      result.mergeIntoDataStream(dataStream);
-    },
-  });
-
-  const reader = stream.getReader();
-  // reader.read().then(function readStream({ value, done }) {
-  //   if (value?.startsWith("d:")) {
-  //     reader.cancel();
-  //     return;
-  //   }
-  //   console.log(value, typeof value, "value");
-  //   return reader.read().then(readStream);
-  // });
-  while (true) {
-    const { value } = await reader.read();
-    if (!value) {
-      reader.cancel();
-      break;
-    }
-    console.log(value, typeof value, "value");
-  }
-};
+) => {};

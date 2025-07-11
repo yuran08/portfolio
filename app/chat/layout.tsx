@@ -7,6 +7,7 @@ import SideBar from "./sidebar/side-bar";
 import { SidebarSkeleton } from "./components/skeleton";
 import { headers } from "next/headers";
 import { getConversationList } from "./action";
+import { AI } from "./ai";
 
 export const metadata: Metadata = {
   title: "𝓎𝓇 𝒸𝒽𝒶𝓉",
@@ -26,27 +27,29 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
   const conversations = await getConversationList();
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      storageKey="chat-theme" // 使用不同的存储键，避免与 home 冲突
-    >
-      <div className="flex h-screen bg-white text-black antialiased dark:bg-slate-950 dark:text-slate-100">
-        <HighlightThemeSwitcher />
-        {/* 通过key强制重新渲染Sidebar */}
-        <Suspense fallback={<SidebarSkeleton />}>
-          <SideBar
-            key={currentConversationId}
-            currentConversationId={currentConversationId}
-            conversations={conversations}
-          />
-        </Suspense>
-        {/* 主内容区域 - 在移动端占满屏幕，在桌面端留出侧边栏空间 */}
-        <main className="flex w-full flex-1 flex-col bg-white md:w-auto dark:bg-slate-950">
-          {children}
-        </main>
-      </div>
-    </ThemeProvider>
+    <AI>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        storageKey="chat-theme" // 使用不同的存储键，避免与 home 冲突
+      >
+        <div className="flex h-screen bg-white text-black antialiased dark:bg-slate-950 dark:text-slate-100">
+          <HighlightThemeSwitcher />
+          {/* 通过key强制重新渲染Sidebar */}
+          <Suspense fallback={<SidebarSkeleton />}>
+            <SideBar
+              key={currentConversationId}
+              currentConversationId={currentConversationId}
+              conversations={conversations}
+            />
+          </Suspense>
+          {/* 主内容区域 - 在移动端占满屏幕，在桌面端留出侧边栏空间 */}
+          <main className="flex w-full flex-1 flex-col bg-white md:w-auto dark:bg-slate-950">
+            {children}
+          </main>
+        </div>
+      </ThemeProvider>
+    </AI>
   );
 }

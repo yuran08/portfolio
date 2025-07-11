@@ -1,7 +1,5 @@
-import ClientPage from "./client-page";
+import Chat from "./components/chat";
 
-export default function Chat() {
-  return (
-    <ClientPage />
-  );
+export default function Page() {
+  return <Chat />;
 }
