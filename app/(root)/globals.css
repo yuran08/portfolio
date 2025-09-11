@@ -119,7 +119,7 @@
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* 移动端触摸优化 */
   @media (hover: none) and (pointer: coarse) {
     button, 
@@ -129,7 +129,7 @@
       min-width: 44px;
     }
   }
-  
+
   /* 防止移动端缩放 */
   input[type="search"]::-webkit-search-decoration,
   input[type="search"]::-webkit-search-cancel-button,
@@ -373,7 +373,7 @@
     font-size: 0.9em;
     margin: 0.8em 0 !important;
   }
-  
+
   .katex {
     font-size: 0.9em !important;
   }
@@ -389,7 +389,7 @@
   .katex {
     font-weight: 600;
   }
-  
+
   .katex-display {
     border: 1px solid currentColor;
     padding: 0.5em;
@@ -404,7 +404,7 @@
     color: #000 !important;
     background: transparent !important;
   }
-  
+
   .katex-display {
     page-break-inside: avoid;
   }
