@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import {
   Sidebar,
@@ -25,22 +25,19 @@ import {
 } from "@/components/ui/tooltip";
 
 export default function AppSidebar() {
-  const { open } = useSidebar();
   return (
     <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
       <SidebarHeader className="flex flex-row items-center justify-between">
         <Link href="/chat" className="flex items-center gap-2 px-2 py-3">
           <IconLogo className={cn("size-5")} />
-          {/* <span className="text-sm font-semibold">Morphic</span> */}
+          <span className="text-sm font-semibold">Chat Box</span>
         </Link>
-        {open && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <SidebarTrigger />
-            </TooltipTrigger>
-            <TooltipContent>收起边栏</TooltipContent>
-          </Tooltip>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <SidebarTrigger />
+          </TooltipTrigger>
+          <TooltipContent>收起边栏</TooltipContent>
+        </Tooltip>
       </SidebarHeader>
       <SidebarContent className="flex h-full flex-col px-2 py-4">
         <SidebarMenu>

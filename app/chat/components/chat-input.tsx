@@ -3,18 +3,16 @@
 import { useRef, useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { SubmitBtn } from "./submit-btn";
-import { ModelSwitcher } from "./model-switcher";
+import { SearchModeToggle } from "./search-mode-toggle";
+import { ModelToggle } from "./model-toggle";
+import { getCookie } from "@/lib/utils/cookies";
 
 const ChatInput = ({
   sendMessage,
-  model,
-  setModel,
   isLoading,
   stop,
 }: {
   sendMessage: ReturnType<typeof useChat>["sendMessage"];
-  model: "deepseek-chat" | "deepseek-reasoner";
-  setModel: (model: "deepseek-chat" | "deepseek-reasoner") => void;
   stop: ReturnType<typeof useChat>["stop"];
   isLoading: boolean;
 }) => {
@@ -52,15 +50,15 @@ const ChatInput = ({
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault(); // 阻止默认的换行行为
-      formRef.current?.requestSubmit(); // 提交表单
+      textareaRef.current?.value.trim() && formRef.current?.requestSubmit(); // 提交表单
     }
   };
 
   return (
-    <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
+    <div className="px-3 pt-2 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
       <form
         ref={formRef}
-        className="w-full rounded-xl border border-gray-200 bg-white p-3 shadow-lg sm:p-4 dark:border-slate-700/60 dark:bg-slate-900/90 dark:shadow-2xl dark:shadow-slate-950/50"
+        className="w-full rounded-xl border p-3 shadow-lg sm:p-4 dark:shadow-2xl dark:shadow-slate-950/50"
         onSubmit={(e) => {
           const message = textareaRef.current?.value;
           if (!message || message.trim() === "") {
@@ -81,7 +79,10 @@ const ChatInput = ({
             },
             {
               body: {
-                model,
+                model:
+                  getCookie("reasoner-model") === "true"
+                    ? "deepseek-reasoner"
+                    : "deepseek-chat",
               },
             }
           );
@@ -93,14 +94,17 @@ const ChatInput = ({
           name="message"
           rows={2}
           placeholder="问任何事情..."
-          className="w-full resize-none border-none bg-transparent text-base text-gray-700 placeholder-gray-400 focus:outline-none sm:text-sm dark:text-slate-200 dark:placeholder-slate-500"
+          className="w-full resize-none border-none bg-transparent text-base text-gray-700 placeholder-gray-400 focus:outline-none sm:text-sm dark:text-slate-200"
           style={{ overflowY: "hidden" }}
           onKeyDown={handleKeyDown}
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
         />
         <div className="mt-2 flex items-center justify-between">
-          <ModelSwitcher model={model} setModel={setModel} />
+          <div className="flex gap-2">
+            <ModelToggle />
+            <SearchModeToggle />
+          </div>
           {/* 提交按钮 */}
           <SubmitBtn isLoading={isLoading} stop={stop} />
         </div>
