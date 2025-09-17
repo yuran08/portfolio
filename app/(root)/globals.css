@@ -169,7 +169,7 @@
 
 /* 内联代码样式 */
 .inline-code {
-  @apply rounded-md border border-gray-300 bg-gray-200 px-1.5 py-0.5 font-mono text-sm text-gray-800;
+  @apply rounded-md border border-gray-300 bg-gray-200 px-1.5 py-0.5 text-gray-800 leading-relaxed;
   @apply dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200;
   /* 防止闪烁的过渡效果 */
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
@@ -226,7 +226,7 @@
 
 /* 代码块内的代码元素 */
 .code-block code {
-  @apply font-mono text-sm;
+  @apply text-sm;
   background: transparent !important;
   padding: 0 !important;
   border: none !important;

@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useEffect, ReactNode, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { UIMessage } from "ai";
-import {
-  UserMessageWrapper,
-  AssistantMessageWrapper,
-  ReasoningMessageWrapper,
-} from "./message";
+import { RenderMessage } from "./render-message";
 import { useChat } from "@ai-sdk/react";
 import { Spinner } from "./loading";
-import { MemoizedMarkdown } from "./markdown";
 
 export function ChatMessages({
   messages,
@@ -87,47 +82,25 @@ export function ChatMessages({
       <div className="mx-auto max-w-3xl">
         <div className="w-full">
           {messages.map((message) => (
-            <div key={message.id}>
-              {message.role === "user" ? (
-                <UserMessageWrapper>
-                  {message.parts
-                    .map((part, index) =>
-                      part.type === "text" ? part.text : null
-                    )
-                    .join("")}
-                </UserMessageWrapper>
-              ) : (
-                <AssistantMessageWrapper>
-                  {message.parts.map((part, index) =>
-                    part.type === "reasoning" ? (
-                      <ReasoningMessageWrapper key={index}>
-                        {part.text}
-                      </ReasoningMessageWrapper>
-                    ) : null
-                  )}
-                  <MemoizedMarkdown
-                    id={message.id}
-                    content={message.parts
-                      .map((part, index) =>
-                        part.type === "text" ? part.text : null
-                      )
-                      .join("")}
-                  />
-                </AssistantMessageWrapper>
-              )}
-            </div>
+            <RenderMessage key={message.id} message={message} />
           ))}
           {status === "submitted" && (
-            <AssistantMessageWrapper>
-              <Spinner />
-            </AssistantMessageWrapper>
+            <div className="mt-4 flex justify-start px-2 sm:mt-6 sm:px-0">
+              <div className="flex w-full max-w-full items-start gap-2 sm:gap-3">
+                <div className="min-w-0 flex-1 rounded-2xl px-3 sm:px-4">
+                  <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
+                    <Spinner />
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
 
       {/* 回到底部按钮 */}
       {showScrollToBottom && (
-        <div className="sticky bottom-0 left-0 right-0 mx-auto flex max-w-3xl justify-end">
+        <div className="sticky right-0 bottom-0 left-0 mx-auto flex max-w-3xl justify-end">
           <button
             onClick={scrollToBottom}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 shadow-lg transition-all duration-200 hover:bg-blue-600 hover:shadow-xl dark:bg-indigo-600 dark:hover:bg-indigo-500"

@@ -31,9 +31,6 @@ export function ModelToggle() {
       variant="outline"
       className={cn(
         "gap-1 border border-input bg-background px-3 text-muted-foreground",
-        // "data-[state=on]:bg-accent-blue",
-        // "data-[state=on]:text-accent-blue-foreground",
-        // "data-[state=on]:border-accent-blue-border",
         "rounded-full hover:bg-accent hover:text-accent-foreground"
       )}
     >

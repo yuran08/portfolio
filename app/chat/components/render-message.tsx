@@ -1,11 +1,11 @@
-import { Sparkles, Wrench } from "lucide-react";
+import { UIMessage } from "ai";
+import { Wrench } from "lucide-react";
+
+import { MemoizedMarkdown } from "./markdown";
+
 import "katex/dist/katex.min.css";
 
-export const UserMessageWrapper = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+const UserMessageWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="mt-4 flex justify-end px-2 sm:mt-6 sm:px-0">
       <div className="max-w-[85%] rounded-2xl bg-black/80 px-3 py-2 text-white shadow-lg sm:max-w-[80%] sm:px-4 sm:py-3 dark:bg-white dark:text-black/80">
@@ -15,7 +15,7 @@ export const UserMessageWrapper = ({
   );
 };
 
-export const ReasoningMessageWrapper = ({
+const ReasoningMessageWrapper = ({
   children,
 }: {
   children: React.ReactNode;
@@ -32,7 +32,7 @@ export const ReasoningMessageWrapper = ({
   );
 };
 
-export const AssistantMessageWrapper = ({
+const AssistantMessageWrapper = ({
   children,
 }: {
   children: React.ReactNode;
@@ -50,11 +50,7 @@ export const AssistantMessageWrapper = ({
   );
 };
 
-export const ToolMessageWrapper = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+const ToolMessageWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="my-4 flex justify-start px-2 sm:my-6 sm:px-0">
       <div className="flex w-full max-w-full items-start gap-2 sm:gap-3">
@@ -68,5 +64,35 @@ export const ToolMessageWrapper = ({
         </div>
       </div>
     </div>
+  );
+};
+
+export const RenderMessage = ({ message }: { message: UIMessage }) => {
+  if (message.role === "user") {
+    return (
+      <UserMessageWrapper>
+        {message.parts
+          .map((part) => (part.type === "text" ? part.text : null))
+          .join("")}
+      </UserMessageWrapper>
+    );
+  }
+
+  return (
+    <AssistantMessageWrapper>
+      {message.parts.map((part, index: number) =>
+        part.type === "reasoning" ? (
+          <ReasoningMessageWrapper key={index}>
+            {part.text}
+          </ReasoningMessageWrapper>
+        ) : null
+      )}
+      <MemoizedMarkdown
+        id={message.id}
+        content={message.parts
+          .map((part) => (part.type === "text" ? part.text : null))
+          .join("")}
+      />
+    </AssistantMessageWrapper>
   );
 };
