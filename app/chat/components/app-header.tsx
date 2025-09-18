@@ -11,14 +11,12 @@ export default function AppHeader() {
   const { open } = useSidebar();
   return (
     <div className="absolute top-4 left-4 z-10">
-      {!open && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <SidebarTrigger className="text-white" />
-          </TooltipTrigger>
-          <TooltipContent>打开边栏</TooltipContent>
-        </Tooltip>
-      )}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SidebarTrigger className="dark:text-white" />
+        </TooltipTrigger>
+        <TooltipContent>{open ? "收起边栏" : "打开边栏"}</TooltipContent>
+      </Tooltip>
     </div>
   );
 }

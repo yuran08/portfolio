@@ -7,9 +7,12 @@ import ChatInput from "./chat-input";
 import { ChatMessages } from "./chat-messages";
 
 export default function Chat() {
-  const { messages, sendMessage, status, stop } = useChat({
+  const { messages, sendMessage, status, stop, regenerate } = useChat({
     onFinish: ({ message }) => {
       console.log(message, "finish");
+    },
+    onToolCall: async ({ toolCall }) => {
+      console.log(toolCall, "ToolCall");
     },
   });
 
@@ -28,11 +31,17 @@ export default function Chat() {
     );
   }
 
-  return (
-    <div className="relative flex h-screen w-full flex-col">
-      <ChatMessages messages={messages} status={status} />
+  console.log(messages, "messages");
 
-      <div className="sticky bottom-0 px-6 pb-6">
+  return (
+    <div className="relative flex h-screen w-full flex-col pl-6">
+      <ChatMessages
+        messages={messages}
+        status={status}
+        regenerate={regenerate}
+      />
+
+      <div className="sticky bottom-0 w-full px-6">
         <div className="mx-auto max-w-3xl">
           <ChatInput
             sendMessage={sendMessage}

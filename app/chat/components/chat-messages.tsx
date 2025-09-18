@@ -1,115 +1,147 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronDown } from "lucide-react";
 import { UIMessage } from "ai";
-import { RenderMessage } from "./render-message";
 import { useChat } from "@ai-sdk/react";
-import { Spinner } from "./loading";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from "@/components/ai-elements/reasoning";
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
+} from "@/components/ai-elements/tool";
+import { Actions, Action } from "@/components/ai-elements/actions";
+import { Message, MessageContent } from "@/components/ai-elements/message";
+import { Response } from "@/components/ai-elements/response";
+
+import { Loader } from "@/components/ai-elements/loader";
+import { Fragment } from "react";
+import { CopyIcon, RefreshCcwIcon } from "lucide-react";
 
 export function ChatMessages({
   messages,
   status,
+  regenerate,
 }: {
   messages: UIMessage[];
   status: ReturnType<typeof useChat>["status"];
+  regenerate: ReturnType<typeof useChat>["regenerate"];
 }) {
-  const messagesRef = useRef<HTMLDivElement | null>(null);
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const hasInitiallyScrolled = useRef(false); // 用于跟踪是否已执行初始滚动
-
-  // 滚动到底部的函数（平滑滚动）
-  const scrollToBottom = useCallback(() => {
-    if (messagesRef.current) {
-      messagesRef.current.scrollTo({
-        top: messagesRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, []);
-
-  // 监听滚动事件，判断是否显示"回到底部"按钮
-  const handleScroll = useCallback(() => {
-    if (messagesRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesRef.current;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-      // 当用户向上滚动超过300px时显示按钮
-      setShowScrollToBottom(distanceFromBottom > 300);
-    }
-  }, []);
-
-  // 主Effect，处理初始滚动和滚动事件监听
-  useEffect(() => {
-    const messagesElement = messagesRef.current;
-    if (!messagesElement) return;
-
-    // 创建一个 MutationObserver 实例来监听内容变化
-    const observer = new MutationObserver(() => {
-      // 检查是否是首次加载内容（Suspense解析完成）
-      if (!hasInitiallyScrolled.current && messagesElement.scrollHeight > 0) {
-        // 立即滚动到底部，无动画
-        messagesElement.scrollTo({
-          top: messagesElement.scrollHeight,
-          behavior: "auto",
-        });
-        hasInitiallyScrolled.current = true; // 标记为已滚动
-        observer.disconnect(); // 完成初始滚动后，断开观察，不再自动滚动
-      }
-    });
-
-    // 开始观察DOM变化（childList和subtree确保能捕获到Suspense内容的替换）
-    observer.observe(messagesElement, {
-      childList: true,
-      subtree: true,
-    });
-
-    // 添加滚动事件监听
-    messagesElement.addEventListener("scroll", handleScroll);
-
-    // 清理函数
-    return () => {
-      observer.disconnect();
-      messagesElement.removeEventListener("scroll", handleScroll);
-    };
-    // 依赖项为空数组，此Effect仅在组件挂载时运行一次
-  }, [handleScroll]);
-
   return (
-    <div
-      ref={messagesRef}
-      className="relative flex-1 overflow-y-auto px-6 py-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      <div className="mx-auto max-w-3xl">
-        <div className="w-full">
-          {messages.map((message) => (
-            <RenderMessage key={message.id} message={message} />
-          ))}
-          {status === "submitted" && (
-            <div className="mt-4 flex justify-start px-2 sm:mt-6 sm:px-0">
-              <div className="flex w-full max-w-full items-start gap-2 sm:gap-3">
-                <div className="min-w-0 flex-1 rounded-2xl px-3 sm:px-4">
-                  <div className="prose prose-gray dark:prose-invert prose-sm max-w-none text-gray-900 dark:text-slate-100">
-                    <Spinner />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 回到底部按钮 */}
-      {showScrollToBottom && (
-        <div className="sticky right-0 bottom-0 left-0 mx-auto flex max-w-3xl justify-end">
-          <button
-            onClick={scrollToBottom}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 shadow-lg transition-all duration-200 hover:bg-blue-600 hover:shadow-xl dark:bg-indigo-600 dark:hover:bg-indigo-500"
-            aria-label="回到底部"
-          >
-            <ChevronDown className="h-5 w-5 text-white" />
-          </button>
-        </div>
-      )}
-    </div>
+    <Conversation>
+      <ConversationContent>
+        {messages.map((message, messageIndex) => (
+          <Fragment key={message.id}>
+            <Message from={message.role}>
+              <MessageContent variant="flat">
+                {message.parts.map((part, i) => {
+                  switch (part.type) {
+                    // case "step-start":
+                    case "reasoning":
+                      return (
+                        <Reasoning
+                          key={`${message.id}-${i}`}
+                          className="w-full"
+                          isStreaming={
+                            status === "streaming" &&
+                            i === message.parts.length - 1 &&
+                            message.id === messages.at(-1)?.id
+                          }
+                        >
+                          <ReasoningTrigger />
+                          <ReasoningContent>{part.text}</ReasoningContent>
+                        </Reasoning>
+                      );
+                    case "text":
+                      const isLastMessage =
+                        messageIndex === messages.length - 1;
+                      return (
+                        <Fragment key={`${message.id}-${i}`}>
+                          <Response>{part.text}</Response>
+                          {message.role === "assistant" &&
+                            ((isLastMessage && status === "ready") ||
+                              !isLastMessage) && (
+                              <Actions>
+                                <Action
+                                  onClick={() =>
+                                    regenerate({ messageId: message.id })
+                                  }
+                                  tooltip="重新生成"
+                                  label="Retry"
+                                >
+                                  <RefreshCcwIcon className="size-4" />
+                                </Action>
+                                <Action
+                                  onClick={() =>
+                                    navigator.clipboard.writeText(part.text)
+                                  }
+                                  tooltip="复制"
+                                  label="Copy"
+                                >
+                                  <CopyIcon className="size-4" />
+                                </Action>
+                              </Actions>
+                            )}
+                        </Fragment>
+                      );
+                    case "tool-web_search":
+                      return (
+                        <Tool defaultOpen={false} key={`${message.id}-${i}`}>
+                          <ToolHeader
+                            type="tool-web_search"
+                            state={part.state}
+                          />
+                          <ToolContent>
+                            <ToolInput input={part.input} />
+                            <ToolOutput
+                              output={part.output}
+                              errorText={part.errorText}
+                            />
+                          </ToolContent>
+                        </Tool>
+                      );
+                    default:
+                      return;
+                  }
+                })}
+              </MessageContent>
+            </Message>
+            {message.role === "user" && (
+              <Actions className="-mt-2 justify-end">
+                <Action
+                  onClick={() =>
+                    navigator.clipboard.writeText(
+                      message.parts.find((item) => item.type === "text")
+                        ?.text || ""
+                    )
+                  }
+                  tooltip="复制"
+                  label="Copy"
+                >
+                  <CopyIcon className="size-4" />
+                </Action>
+              </Actions>
+            )}
+          </Fragment>
+        ))}
+        {(status === "submitted" || status === "streaming") && (
+          <Message className="py-0" from="system" key="loading">
+            <MessageContent variant="flat">
+              <Loader />
+            </MessageContent>
+          </Message>
+        )}
+      </ConversationContent>
+      <ConversationScrollButton className="dark:bg-black dark:text-foreground" />
+    </Conversation>
   );
 }

@@ -2,13 +2,19 @@
 
 import { cn } from "@/lib/utils";
 import { getCookie, setCookie } from "@/lib/utils/cookies";
-import { Globe } from "lucide-react";
+import { Brain } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Toggle } from "@/components/ui/toggle";
 
-export function ModelToggle() {
-  const [isReasonerModel, setIsReasonerModel] = useState(false);
-
+export function ModelToggle({
+  isReasonerModel,
+  setIsSearchMode,
+  setIsReasonerModel,
+}: {
+  isReasonerModel: boolean;
+  setIsSearchMode: Function;
+  setIsReasonerModel: Function;
+}) {
   useEffect(() => {
     const savedMode = getCookie("reasoner-model");
     if (savedMode !== null) {
@@ -19,6 +25,10 @@ export function ModelToggle() {
   }, []);
 
   const handleSearchModeChange = (pressed: boolean) => {
+    if (pressed) {
+      setIsSearchMode(!pressed);
+      setCookie("search-mode", (!pressed).toString());
+    }
     setIsReasonerModel(pressed);
     setCookie("reasoner-model", pressed.toString());
   };
@@ -30,11 +40,11 @@ export function ModelToggle() {
       onPressedChange={handleSearchModeChange}
       variant="outline"
       className={cn(
-        "gap-1 border border-input bg-background px-3 text-muted-foreground",
-        "rounded-full hover:bg-accent hover:text-accent-foreground"
+        "gap-1 border border-input bg-background px-3 text-accent-foreground",
+        "rounded-full hover:bg-accent hover:text-accent-foreground data-[state=on]:border-blue-300/50 data-[state=on]:bg-blue-600/20 data-[state=on]:text-blue-600 dark:data-[state=on]:border-blue-900 dark:data-[state=on]:bg-blue-950 dark:data-[state=on]:text-blue-300"
       )}
     >
-      <Globe className="size-4" />
+      <Brain className="size-4" />
       <span className="text-xs">推理模型</span>
     </Toggle>
   );

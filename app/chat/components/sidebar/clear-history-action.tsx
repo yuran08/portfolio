@@ -54,7 +54,7 @@ export function ClearHistoryAction({ empty }: ClearHistoryActionProps) {
           <AlertDialogTrigger asChild>
             <DropdownMenuItem
               disabled={empty || isPending}
-              className="flex items-center gap-2 text-destructive focus:text-destructive"
+              className="flex items-center gap-2 text-destructive focus:text-destructive dark:text-white"
               onSelect={(event) => event.preventDefault()} // Prevent closing dropdown
             >
               <Trash2 size={14} /> 清空历史对话

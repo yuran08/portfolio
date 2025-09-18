@@ -2,11 +2,11 @@ import { tool } from "ai";
 import { z } from "zod";
 import type { TavilySearchResponse, TavilySearchOptions } from "@tavily/core";
 
-// 从 TavilySearchResponse 中提取类型（已简化，不再使用完整类型）
-
 // 定义搜索工具的参数模式
 export const webSearchToolSchema = z.object({
-  query: z.string().describe("要搜索的查询内容"),
+  query: z
+    .string()
+    .describe("根据用户输入，精简并针对性的搜索的用户所需的内容"),
   search_depth: z
     .enum(["basic", "advanced"])
     .optional()
@@ -26,11 +26,6 @@ export const webSearchToolSchema = z.object({
     .optional()
     .describe("最大结果数量（1-20）")
     .default(5),
-  include_raw_content: z
-    .enum(["text", "markdown"])
-    .optional()
-    .describe("是否包含原始网页内容，可以是 'text' 或 'markdown' 格式")
-    .default("markdown"),
   include_answer: z
     .boolean()
     .optional()
@@ -61,9 +56,6 @@ export const searchWeb = async (
   options: Partial<TavilySearchOptions> = {}
 ): Promise<TavilySearchResponse> => {
   try {
-    console.log("🔍 开始Tavily搜索:", { query, options });
-
-    // 检查是否有 API 密钥
     const apiKey = process.env.TAVILY_API_KEY;
     if (!apiKey) {
       throw new Error("未配置 TAVILY_API_KEY 环境变量");
@@ -78,7 +70,6 @@ export const searchWeb = async (
       searchDepth: "basic",
       topic: "general",
       maxResults: 5,
-      includeRawContent: "markdown",
       includeAnswer: true,
       includeImages: true,
       country: "china",
@@ -87,13 +78,6 @@ export const searchWeb = async (
 
     // 执行搜索
     const response = await tvly.search(query, searchOptions);
-
-    console.log("✅ Tavily搜索成功:", {
-      query: response.query,
-      resultsCount: response.results?.length || 0,
-      hasAnswer: !!response.answer,
-      responseTime: response.responseTime,
-    });
 
     return response;
   } catch (error) {
@@ -114,13 +98,12 @@ export const searchWeb = async (
  */
 export const webSearchAITool = tool({
   description: "使用Tavily Search API搜索互联网获取最新信息和新闻，专为AI优化",
-  parameters: webSearchToolSchema,
+  inputSchema: webSearchToolSchema,
   execute: async ({
     query,
     search_depth = "basic",
     topic = "general",
     max_results = 5,
-    include_raw_content = "markdown",
     include_answer = true,
     include_images = true,
     country = "china",
@@ -132,7 +115,6 @@ export const webSearchAITool = tool({
         searchDepth: search_depth,
         topic,
         maxResults: Math.min(Math.max(max_results, 1), 20), // 限制在 1-20 之间
-        includeRawContent: include_raw_content,
         includeAnswer: include_answer,
         includeImages: include_images,
         country,
@@ -142,24 +124,12 @@ export const webSearchAITool = tool({
 
       const result = await searchWeb(query, searchOptions);
 
-      // 提取渲染必要的精简数据
-      const renderData = {
-        results:
-          result.results?.map((item) => ({
-            title: item.title,
-            url: item.url,
-          })) || [],
-      };
-
       return {
         success: true,
         query: result.query,
         answer: result.answer,
         results: result.results,
         images: result.images,
-        // 新增：渲染必要的精简数据
-        renderData,
-        // 搜索结果需要AI根据内容生成回答
         requiresFollowUp: true,
       };
     } catch (error) {
@@ -179,30 +149,3 @@ export const webSearchAITool = tool({
     }
   },
 });
-
-/**
- * 格式化搜索结果为 Markdown
- */
-export const formatSearchResultsToMarkdown = (searchResponse: {
-  results: Array<{
-    title: string;
-    url: string;
-  }>;
-}): string => {
-  let markdown = `### 🌐 网络搜索结果\n\n`;
-
-  if (searchResponse.results.length === 0) {
-    markdown += "暂无搜索结果。\n\n";
-    return markdown;
-  }
-
-  searchResponse.results.forEach((result, index: number) => {
-    markdown += `##### ${index + 1}. ${result.title}  `;
-
-    if (result.url) {
-      markdown += `🔗 [查看原文](${result.url})\n\n`;
-    }
-  });
-
-  return markdown;
-};

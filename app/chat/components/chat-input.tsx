@@ -19,6 +19,8 @@ const ChatInput = ({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isComposing, setIsComposing] = useState(false);
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [isReasonerModel, setIsReasonerModel] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (isComposing) return;
@@ -33,7 +35,7 @@ const ChatInput = ({
     <div className="px-3 pt-2 pb-3 sm:px-4 sm:pt-3 sm:pb-4">
       <form
         ref={formRef}
-        className="w-full rounded-xl border bg-accent p-3 shadow-lg sm:p-4 dark:shadow-2xl dark:shadow-slate-950/50"
+        className="w-full rounded-xl border bg-accent p-3 sm:p-4 dark:shadow-2xl dark:shadow-slate-950/50"
         onSubmit={(e) => {
           const message = textareaRef.current?.value;
           if (!message || message.trim() === "") {
@@ -59,16 +61,27 @@ const ChatInput = ({
           name="message"
           rows={2}
           placeholder="问任何事情..."
-          className="w-full resize-none border-0 bg-transparent text-base text-gray-700 placeholder-gray-400 focus:border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none sm:text-sm dark:bg-transparent dark:text-slate-200"
+          className="w-full resize-none border-0 bg-transparent text-base text-gray-700 placeholder-gray-400 shadow-none focus:border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none sm:text-sm dark:bg-transparent dark:text-slate-200"
           spellCheck
           onKeyDown={handleKeyDown}
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
         />
         <div className="mt-2 flex items-center justify-between">
-          <div className="flex gap-2">
-            <ModelToggle />
-            <SearchModeToggle />
+          <div className="flex items-center gap-2">
+            <ModelToggle
+              isReasonerModel={isReasonerModel}
+              setIsSearchMode={setIsSearchMode}
+              setIsReasonerModel={setIsReasonerModel}
+            />
+            <SearchModeToggle
+              isSearchMode={isSearchMode}
+              setIsSearchMode={setIsSearchMode}
+              setIsReasonerModel={setIsReasonerModel}
+            />
+            <div className="text-sm text-gray-400">
+              推理模型暂不支持联网功能
+            </div>
           </div>
           {/* 提交按钮 */}
           <SubmitBtn isLoading={isLoading} stop={stop} />

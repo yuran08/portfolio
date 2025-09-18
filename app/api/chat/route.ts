@@ -1,11 +1,12 @@
-import { deepseek } from "@ai-sdk/deepseek";
 import {
   UIMessage,
   streamText,
   convertToModelMessages,
   createIdGenerator,
+  smoothStream,
 } from "ai";
 import { cookies } from "next/headers";
+import { getModelConfig } from "@/app/chat/lib/model";
 
 export const maxDuration = 60;
 
@@ -18,13 +19,19 @@ export async function POST(req: Request) {
     const reasonerModel = cookieStore.get("reasoner-model")?.value === "true";
     const searchMode = cookieStore.get("search-mode")?.value === "true";
 
+    const modelConfig = getModelConfig(reasonerModel, searchMode);
+
     const result = streamText({
-      model: deepseek(reasonerModel ? "deepseek-reasoner" : "deepseek-chat"),
+      model: modelConfig.model,
       messages: convertToModelMessages(messages),
-      temperature: 0.7,
-      maxOutputTokens: 2000,
-      system:
-        "说明：你是一个有用的人工智能助手，提供准确的信息。对用户的问题提供全面和详细的答复。用适当的标题来组织你的回答。当你不确定具体细节时，要承认。专注于保持你的回答的高度准确性。回答问题时优先考虑使用中文进行回答。",
+      tools: modelConfig.tools,
+      temperature: modelConfig.temperature,
+      system: modelConfig.system,
+      stopWhen: modelConfig.stopWhen,
+      experimental_transform: smoothStream({
+        delayInMs: 10,
+        chunking: "word",
+      }),
     });
 
     return result.toUIMessageStreamResponse({
