@@ -1,5 +1,5 @@
+import { InferToolInput, InferToolOutput } from "ai";
 import { webSearchAITool } from "./web-search";
-
 /**
  * AI 工具配置集合
  * 供 LLM 使用的所有工具
@@ -10,3 +10,6 @@ export const aiTools = {
   // weather: weatherAITool,
   // translator: translatorAITool,
 } as const;
+
+export type getWebSearchInput = InferToolInput<typeof webSearchAITool>;
+export type getWebSearchOutput = InferToolOutput<typeof webSearchAITool>;

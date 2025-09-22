@@ -62,36 +62,10 @@ export function ChatMessages({
                         </Reasoning>
                       );
                     case "text":
-                      const isLastMessage =
-                        messageIndex === messages.length - 1;
                       return (
-                        <Fragment key={`${message.id}-${i}`}>
-                          <Response>{part.text}</Response>
-                          {message.role === "assistant" &&
-                            ((isLastMessage && status === "ready") ||
-                              !isLastMessage) && (
-                              <Actions>
-                                <Action
-                                  onClick={() =>
-                                    regenerate({ messageId: message.id })
-                                  }
-                                  tooltip="重新生成"
-                                  label="Retry"
-                                >
-                                  <RefreshCcwIcon className="size-4" />
-                                </Action>
-                                <Action
-                                  onClick={() =>
-                                    navigator.clipboard.writeText(part.text)
-                                  }
-                                  tooltip="复制"
-                                  label="Copy"
-                                >
-                                  <CopyIcon className="size-4" />
-                                </Action>
-                              </Actions>
-                            )}
-                        </Fragment>
+                        <Response key={`${message.id}-${i}`}>
+                          {part.text}
+                        </Response>
                       );
                     case "tool-web_search":
                       return (
@@ -115,6 +89,26 @@ export function ChatMessages({
                 })}
               </MessageContent>
             </Message>
+            {message.role === "assistant" &&
+              (messageIndex != messages.length - 1 ||
+                (messageIndex == messages.length - 1 && status == "ready")) && (
+                <Actions>
+                  <Action
+                    onClick={() => regenerate({ messageId: message.id })}
+                    tooltip="重新生成"
+                    label="Retry"
+                  >
+                    <RefreshCcwIcon className="size-4" />
+                  </Action>
+                  <Action
+                    onClick={() => navigator.clipboard.writeText("")}
+                    tooltip="复制"
+                    label="Copy"
+                  >
+                    <CopyIcon className="size-4" />
+                  </Action>
+                </Actions>
+              )}
             {message.role === "user" && (
               <Actions className="-mt-2 justify-end">
                 <Action

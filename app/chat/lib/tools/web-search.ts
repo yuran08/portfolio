@@ -125,26 +125,14 @@ export const webSearchAITool = tool({
       const result = await searchWeb(query, searchOptions);
 
       return {
-        success: true,
-        query: result.query,
         answer: result.answer,
         results: result.results,
         images: result.images,
-        requiresFollowUp: true,
       };
     } catch (error) {
       console.error("❌ Tavily搜索工具执行失败:", error);
       return {
-        success: false,
         error: error instanceof Error ? error.message : "搜索失败",
-        query,
-        // 错误情况下也提供renderData
-        renderData: {
-          query,
-          results: [],
-          resultsCount: 0,
-          error: error instanceof Error ? error.message : "搜索失败",
-        },
       };
     }
   },

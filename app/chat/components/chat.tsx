@@ -5,10 +5,21 @@ import { useChat } from "@ai-sdk/react";
 import Welcome from "./welcome";
 import ChatInput from "./chat-input";
 import { ChatMessages } from "./chat-messages";
+import { DefaultChatTransport, generateId } from "ai";
 
-export default function Chat() {
+export default function Chat({ id }: { id: ReturnType<typeof generateId> }) {
   const { messages, sendMessage, status, stop, regenerate } = useChat({
+    // @ts-ignore
+    transport: new DefaultChatTransport({
+      body: {
+        id: id,
+      },
+    }),
+    id: id,
+    experimental_throttle: 100,
     onFinish: ({ message }) => {
+      window.history.replaceState({}, "", `/chat/${id}`);
+      window.dispatchEvent(new CustomEvent("chat-history-updated"));
       console.log(message, "finish");
     },
     onToolCall: async ({ toolCall }) => {
@@ -31,7 +42,7 @@ export default function Chat() {
     );
   }
 
-  console.log(messages, "messages");
+  // console.log(messages, "messages");
 
   return (
     <div className="relative flex h-screen w-full flex-col pl-6">

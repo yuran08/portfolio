@@ -7,13 +7,19 @@ import {
 } from "ai";
 import { cookies } from "next/headers";
 import { getModelConfig } from "@/app/chat/lib/model";
+import { createChat } from "@/app/chat/lib/db/actions";
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    const { messages }: { messages: UIMessage[]; model: string } =
+    const { messages, id }: { messages: UIMessage[]; id: string } =
       await req.json();
+
+    console.log(id, "id");
+
+    // await createChat(id);
+    console.log(messages, "route messages");
 
     const cookieStore = await cookies();
     const reasonerModel = cookieStore.get("reasoner-model")?.value === "true";

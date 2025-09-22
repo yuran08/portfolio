@@ -6,6 +6,7 @@ import { SubmitBtn } from "./submit-btn";
 import { SearchModeToggle } from "./search-mode-toggle";
 import { ModelToggle } from "./model-toggle";
 import { Textarea } from "@/components/ui/textarea";
+import { createIdGenerator } from "ai";
 
 const ChatInput = ({
   sendMessage,
@@ -44,7 +45,10 @@ const ChatInput = ({
           e.preventDefault();
           textareaRef.current!.value = "";
           sendMessage({
-            id: Date.now().toString(),
+            id: createIdGenerator({
+              prefix: "msg",
+              size: 16,
+            })(),
             role: "user",
             parts: [
               {
