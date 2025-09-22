@@ -21,7 +21,7 @@ const MenuLink = ({ link }: { link: { href: string; label: string } }) => {
   if (currentPage === link.label) return null;
 
   return (
-    <ViewTransition name={link.label}>
+    <ViewTransition key={`menu-${link.label}`} name={link.label}>
       <Link
         href={link.href}
         className="group relative block overflow-hidden px-2 py-1 text-base font-bold uppercase focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring sm:text-lg lg:text-xl"
