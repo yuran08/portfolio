@@ -8,23 +8,40 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ChatHistorySection } from "./sidebar/chat-history-section";
 import { ChatHistorySkeleton } from "./sidebar/chat-history-skeleton";
-import { IconLogo } from "@/components/ui/icons";
+// import { IconLogo } from "@/components/ui/icons";
 
 export default function AppSidebar() {
   return (
     <Sidebar side="left" variant="inset" collapsible="offcanvas">
       <SidebarHeader className="flex flex-row items-center justify-between">
-        <Link href="/chat" className="flex items-center gap-2 px-2 py-3">
-          <IconLogo className={cn("size-5")} />
+        <Link
+          href="/chat"
+          className="justify-betwee flex items-center gap-2 px-2 py-3"
+        >
+          {/* <div> */}
+          {/* <IconLogo className={cn("size-5")} /> */}
           <span className="text-sm font-semibold">Chat Box</span>
+          {/* </div> */}
         </Link>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <SidebarTrigger className="dark:text-white" />
+          </TooltipTrigger>
+          <TooltipContent>收起边栏</TooltipContent>
+        </Tooltip>
       </SidebarHeader>
       <SidebarContent className="flex h-full flex-col px-2 py-4">
         <SidebarMenu>

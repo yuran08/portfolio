@@ -38,7 +38,7 @@ export function ChatMessages({
 }) {
   return (
     <Conversation>
-      <ConversationContent>
+      <ConversationContent className="mx-auto w-[768px] max-w-9/10">
         {messages.map((message, messageIndex) => (
           <Fragment key={message.id}>
             <Message from={message.role}>
@@ -69,18 +69,22 @@ export function ChatMessages({
                       );
                     case "tool-web_search":
                       return (
-                        <Tool defaultOpen={false} key={`${message.id}-${i}`}>
+                        <Tool
+                          disabled
+                          defaultOpen={false}
+                          key={`${message.id}-${i}`}
+                        >
                           <ToolHeader
                             type="tool-web_search"
                             state={part.state}
                           />
-                          <ToolContent>
+                          {/* <ToolContent>
                             <ToolInput input={part.input} />
                             <ToolOutput
                               output={part.output}
                               errorText={part.errorText}
                             />
-                          </ToolContent>
+                          </ToolContent> */}
                         </Tool>
                       );
                     default:
@@ -93,13 +97,13 @@ export function ChatMessages({
               (messageIndex != messages.length - 1 ||
                 (messageIndex == messages.length - 1 && status == "ready")) && (
                 <Actions>
-                  <Action
+                  {/* <Action
                     onClick={() => regenerate({ messageId: message.id })}
                     tooltip="重新生成"
                     label="Retry"
                   >
                     <RefreshCcwIcon className="size-4" />
-                  </Action>
+                  </Action> */}
                   <Action
                     onClick={() => navigator.clipboard.writeText("")}
                     tooltip="复制"

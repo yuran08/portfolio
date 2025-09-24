@@ -47,7 +47,7 @@ export default function Chat({
   }
 
   return (
-    <div className="relative flex h-screen w-full flex-col pl-6">
+    <div className="relative flex h-screen w-full flex-col">
       <ChatMessages
         messages={messages}
         status={status}

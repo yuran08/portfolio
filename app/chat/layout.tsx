@@ -24,7 +24,7 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
     >
       <div className="flex h-screen text-black antialiased">
         {/* <HighlightThemeSwitcher /> */}
-        <SidebarProvider defaultOpen={false}>
+        <SidebarProvider defaultOpen>
           <AppSidebar />
           <main className="relative flex w-full flex-1 flex-col bg-background md:w-auto">
             <AppHeader />
