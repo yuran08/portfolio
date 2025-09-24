@@ -53,14 +53,12 @@ export const loadChat = async (chatId: string): Promise<MyUIMessage[]> => {
     where: eq(messages.chatId, chatId),
     with: {
       parts: {
-        orderBy: (
-          parts: MyDBUIMessagePartSelect,
-          { asc }: { asc: Function }
-        ) => [asc(parts.order)],
+        orderBy: (parts, { asc }) => [asc(parts.order)],
       },
     },
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
   });
+  console.log("load chat output:", result);
 
   return result.map((message) => ({
     id: message.id,
@@ -72,7 +70,7 @@ export const loadChat = async (chatId: string): Promise<MyUIMessage[]> => {
 };
 
 export const getChats = async () => {
-  return await db.select().from(chats);
+  return await db.select().from(chats).limit(20);
 };
 
 export const deleteChat = async (chatId: string) => {

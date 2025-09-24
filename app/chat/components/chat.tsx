@@ -5,27 +5,31 @@ import { useChat } from "@ai-sdk/react";
 import Welcome from "./welcome";
 import ChatInput from "./chat-input";
 import { ChatMessages } from "./chat-messages";
-import { DefaultChatTransport, generateId } from "ai";
+import { DefaultChatTransport } from "ai";
+import type { MyUIMessage } from "../lib/message-type";
 
-export default function Chat({ id }: { id: ReturnType<typeof generateId> }) {
-  const { messages, sendMessage, status, stop, regenerate } = useChat({
-    // @ts-ignore
-    transport: new DefaultChatTransport({
-      body: {
-        id: id,
+export default function Chat({
+  id,
+  initialMessages,
+}: {
+  id: string;
+  initialMessages?: MyUIMessage[];
+}) {
+  const { messages, sendMessage, status, stop, regenerate } =
+    useChat<MyUIMessage>({
+      transport: new DefaultChatTransport({
+        body: {
+          chatId: id,
+        },
+      }),
+      messages: initialMessages,
+      id: id,
+      experimental_throttle: 100,
+      onFinish: () => {
+        window.history.replaceState({}, "", `/chat/${id}`);
+        window.dispatchEvent(new CustomEvent("chat-history-updated"));
       },
-    }),
-    id: id,
-    experimental_throttle: 100,
-    onFinish: ({ message }) => {
-      window.history.replaceState({}, "", `/chat/${id}`);
-      window.dispatchEvent(new CustomEvent("chat-history-updated"));
-      console.log(message, "finish");
-    },
-    onToolCall: async ({ toolCall }) => {
-      console.log(toolCall, "ToolCall");
-    },
-  });
+    });
 
   if (!messages.length) {
     return (
@@ -41,8 +45,6 @@ export default function Chat({ id }: { id: ReturnType<typeof generateId> }) {
       </div>
     );
   }
-
-  // console.log(messages, "messages");
 
   return (
     <div className="relative flex h-screen w-full flex-col pl-6">

@@ -28,7 +28,7 @@ export function getModelConfig(
 > &
   Partial<Pick<ModelConfig, "tools">> {
   let systemPrompt = baseSystemPrompt + userPrompt;
-  let stopWhen = stepCountIs(5);
+  const stopWhen = stepCountIs(5);
   let tools = {};
 
   if (searchMode) {

@@ -11,9 +11,9 @@ export function ModelToggle({
   setIsSearchMode,
   setIsReasonerModel,
 }: {
-  isReasonerModel: boolean;
-  setIsSearchMode: Function;
-  setIsReasonerModel: Function;
+  isReasonerModel: boolean | undefined;
+  setIsSearchMode: ReturnType<typeof useState<boolean>>[1];
+  setIsReasonerModel: ReturnType<typeof useState<boolean>>[1];
 }) {
   useEffect(() => {
     const savedMode = getCookie("reasoner-model");
@@ -22,7 +22,7 @@ export function ModelToggle({
     } else {
       setCookie("reasoner-model", "false");
     }
-  }, []);
+  }, [setIsReasonerModel]);
 
   const handleSearchModeChange = (pressed: boolean) => {
     if (pressed) {

@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { getCookie, setCookie } from "@/lib/utils/cookies";
 import { Globe } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toggle } from "@/components/ui/toggle";
 
 export function SearchModeToggle({
@@ -11,9 +11,9 @@ export function SearchModeToggle({
   setIsSearchMode,
   setIsReasonerModel,
 }: {
-  isSearchMode: boolean;
-  setIsSearchMode: Function;
-  setIsReasonerModel: Function;
+  isSearchMode: boolean | undefined;
+  setIsSearchMode: ReturnType<typeof useState<boolean>>[1];
+  setIsReasonerModel: ReturnType<typeof useState<boolean>>[1];
 }) {
   useEffect(() => {
     const savedMode = getCookie("search-mode");
@@ -22,7 +22,7 @@ export function SearchModeToggle({
     } else {
       setCookie("search-mode", "false");
     }
-  }, []);
+  }, [setIsSearchMode]);
 
   const handleSearchModeChange = (pressed: boolean) => {
     if (pressed) {

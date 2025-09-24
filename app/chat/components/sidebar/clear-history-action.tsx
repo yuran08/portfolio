@@ -54,10 +54,10 @@ export function ClearHistoryAction({ empty }: ClearHistoryActionProps) {
           <AlertDialogTrigger asChild>
             <DropdownMenuItem
               disabled={empty || isPending}
-              className="flex items-center gap-2 text-destructive focus:text-destructive dark:text-white"
+              className="items-cente flex gap-2 text-destructive focus:text-destructive"
               onSelect={(event) => event.preventDefault()} // Prevent closing dropdown
             >
-              <Trash2 size={14} /> 清空历史对话
+              <Trash2 size={14} className="text-destructive" /> 清空历史对话
             </DropdownMenuItem>
           </AlertDialogTrigger>
 
@@ -65,7 +65,7 @@ export function ClearHistoryAction({ empty }: ClearHistoryActionProps) {
             <AlertDialogHeader>
               <AlertDialogTitle>您确定吗?</AlertDialogTitle>
               <AlertDialogDescription>
-                此操作不能撤消。它将永久删除您的历史记录。
+                此操作不能撤消。它将永久删除您的历史对话。
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

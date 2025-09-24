@@ -4,7 +4,7 @@ import {
   integer,
   jsonb,
   pgTable,
-  real,
+  // real,
   text,
   timestamp,
   varchar,
@@ -23,6 +23,7 @@ export const chats = pgTable("chats", {
         size: 16,
       })()
     ),
+  createdAt: timestamp().defaultNow().notNull(),
 });
 
 export const messages = pgTable(
@@ -99,9 +100,15 @@ export const parts = pgTable(
         size: 16,
       })()
     ),
-    data_webSearch_result: varchar().$type<MyDataPart["webSearch"]["result"]>(),
-    data_webSearch_images: varchar().$type<MyDataPart["webSearch"]["images"]>(),
-    data_webSearch_answer: varchar().$type<MyDataPart["webSearch"]["answer"]>(),
+    data_webSearch_result: jsonb()
+      .$type<MyDataPart["webSearch"]["result"][0]>()
+      .array(),
+    data_webSearch_images: jsonb()
+      .$type<MyDataPart["webSearch"]["images"][0]>()
+      .array(),
+    data_webSearch_answer: jsonb()
+      .$type<MyDataPart["webSearch"]["answer"][0]>()
+      .array(),
 
     providerMetadata: jsonb().$type<MyProviderMetadata>(),
   },

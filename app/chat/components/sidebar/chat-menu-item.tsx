@@ -25,9 +25,9 @@ import {
 import { Chat } from "@/lib/types";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 
 interface ChatMenuItemProps {
@@ -74,9 +74,9 @@ const formatDateWithTime = (date: Date | string) => {
 
 export function ChatMenuItem({ chat }: ChatMenuItemProps) {
   const pathname = usePathname();
-  const isActive = pathname === chat.path;
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const isActive = pathname.includes(chat.id);
+  // const router = useRouter();
+  const [isPending] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -112,9 +112,9 @@ export function ChatMenuItem({ chat }: ChatMenuItemProps) {
         isActive={isActive}
         className="h-auto flex-col items-start gap-0.5 p-2 pr-8"
       >
-        <Link href={chat.path}>
+        <Link href={`/chat/${chat.id}`}>
           <div className="w-full truncate text-xs font-medium select-none">
-            {chat.title}
+            {chat.id}
           </div>
           <div className="w-full text-xs text-muted-foreground">
             {formatDateWithTime(chat.createdAt)}
@@ -132,7 +132,7 @@ export function ChatMenuItem({ chat }: ChatMenuItemProps) {
             ) : (
               <MoreHorizontal size={16} />
             )}
-            <span className="sr-only">Chat Actions</span>
+            <span className="sr-only">对话操作</span>
           </SidebarMenuAction>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="right" align="start">
@@ -146,22 +146,19 @@ export function ChatMenuItem({ chat }: ChatMenuItemProps) {
                   // Don't call onDelete directly, just open the dialog
                 }}
               >
-                <Trash2 size={14} />
-                Delete Chat
+                <Trash2 size={14} className="text-destructive" />
+                删除
               </DropdownMenuItem>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle>永久删除对话</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  this chat history.
+                  删除后，该对话将不可恢复。确认删除吗？
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={isPending}>
-                  Cancel
-                </AlertDialogCancel>
+                <AlertDialogCancel disabled={isPending}>取消</AlertDialogCancel>
                 <AlertDialogAction
                   disabled={isPending}
                   onClick={onDelete} // Call onDelete here
@@ -172,7 +169,7 @@ export function ChatMenuItem({ chat }: ChatMenuItemProps) {
                       <Spinner />
                     </div>
                   ) : (
-                    "Delete"
+                    "删除"
                   )}
                 </AlertDialogAction>
               </AlertDialogFooter>

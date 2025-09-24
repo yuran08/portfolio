@@ -7,21 +7,24 @@ import { SearchModeToggle } from "./search-mode-toggle";
 import { ModelToggle } from "./model-toggle";
 import { Textarea } from "@/components/ui/textarea";
 import { createIdGenerator } from "ai";
+import { MyUIMessage } from "../lib/message-type";
 
 const ChatInput = ({
   sendMessage,
   isLoading,
   stop,
 }: {
-  sendMessage: ReturnType<typeof useChat>["sendMessage"];
+  sendMessage: ReturnType<typeof useChat<MyUIMessage>>["sendMessage"];
   stop: ReturnType<typeof useChat>["stop"];
   isLoading: boolean;
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [isComposing, setIsComposing] = useState(false);
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const [isReasonerModel, setIsReasonerModel] = useState(false);
+  const [isSearchMode, setIsSearchMode] = useState<boolean | undefined>(false);
+  const [isReasonerModel, setIsReasonerModel] = useState<boolean | undefined>(
+    false
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (isComposing) return;

@@ -1,9 +1,9 @@
-export interface Chat extends Record<string, any> {
+export interface Chat extends Record<string, string | Date> {
   id: string;
-  title: string;
+  // title: string;
   createdAt: Date;
   // userId: string
-  // path: string
+  // path: string;
   // messages: ExtendedCoreMessage[] // Note: Changed from AIMessage to ExtendedCoreMessage
   // sharePath?: string
 }

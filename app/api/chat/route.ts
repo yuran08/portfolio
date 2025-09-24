@@ -1,25 +1,29 @@
-import {
-  UIMessage,
-  streamText,
-  convertToModelMessages,
-  createIdGenerator,
-  smoothStream,
-} from "ai";
+import { streamText, convertToModelMessages, createIdGenerator } from "ai";
 import { cookies } from "next/headers";
 import { getModelConfig } from "@/app/chat/lib/model";
-import { createChat } from "@/app/chat/lib/db/actions";
+import { createChat, upsertMessage } from "@/app/chat/lib/db/actions";
+import { MyUIMessage } from "@/app/chat/lib/message-type";
 
-export const maxDuration = 60;
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    const { messages, id }: { messages: UIMessage[]; id: string } =
+    const { messages, chatId }: { messages: MyUIMessage[]; chatId: string } =
       await req.json();
 
-    console.log(id, "id");
+    const ifCreateChat = messages.length === 1;
+    const lastMessage = messages[messages.length - 1];
 
-    // await createChat(id);
-    console.log(messages, "route messages");
+    console.log(chatId, ifCreateChat, "chatId");
+    if (ifCreateChat) {
+      await createChat(chatId);
+    }
+
+    await upsertMessage({
+      chatId,
+      id: lastMessage.id,
+      message: lastMessage,
+    });
 
     const cookieStore = await cookies();
     const reasonerModel = cookieStore.get("reasoner-model")?.value === "true";
@@ -34,10 +38,10 @@ export async function POST(req: Request) {
       temperature: modelConfig.temperature,
       system: modelConfig.system,
       stopWhen: modelConfig.stopWhen,
-      experimental_transform: smoothStream({
-        delayInMs: 10,
-        chunking: "word",
-      }),
+      // experimental_transform: smoothStream({
+      //   delayInMs: 10,
+      //   chunking: "word",
+      // }),
     });
 
     return result.toUIMessageStreamResponse({
@@ -46,6 +50,19 @@ export async function POST(req: Request) {
         prefix: "msg",
         size: 16,
       }),
+      onFinish: async ({ messages }) => {
+        console.log(messages, "onfinish callback");
+        try {
+          const responseMessage = messages[messages.length - 1] as MyUIMessage;
+          await upsertMessage({
+            chatId,
+            id: responseMessage.id,
+            message: responseMessage,
+          });
+        } catch (error) {
+          console.error("upsert error:", error);
+        }
+      },
     });
   } catch (error) {
     console.error("Chat API error:", error);

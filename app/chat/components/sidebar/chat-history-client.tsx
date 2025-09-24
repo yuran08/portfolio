@@ -28,23 +28,24 @@ export function ChatHistoryClient() {
   const [isPending, startTransition] = useTransition();
 
   const fetchInitialChats = useCallback(async () => {
-    // setIsLoading(true);
-    // try {
-    //   const response = await fetch(`/api/chats?offset=0&limit=20`);
-    //   if (!response.ok) {
-    //     throw new Error("Failed to fetch initial chat history");
-    //   }
-    //   const { chats: newChats, nextOffset: newNextOffset } =
-    //     (await response.json()) as ChatPageResponse;
-    //   setChats(newChats);
-    //   setNextOffset(newNextOffset);
-    // } catch (error) {
-    //   console.error("Failed to load initial chats:", error);
-    //   toast.error("Failed to load chat history.");
-    //   setNextOffset(null);
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/chats`);
+      console.log("get chats history response:", response);
+      if (!response.ok) {
+        throw new Error("Failed to fetch initial chat history");
+      }
+      const { chats: newChats, nextOffset: newNextOffset } =
+        (await response.json()) as ChatPageResponse;
+      setChats(newChats);
+      // setNextOffset(newNextOffset);
+    } catch (error) {
+      console.error("Failed to load initial chats:", error);
+      toast.error("Failed to load chat history.");
+      setNextOffset(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
