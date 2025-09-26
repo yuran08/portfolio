@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import type { ToolUIPart } from "ai";
 import {
   CheckCircleIcon,
-  ChevronDownIcon,
+  // ChevronDownIcon,
   CircleIcon,
   ClockIcon,
   WrenchIcon,

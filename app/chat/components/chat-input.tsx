@@ -29,9 +29,9 @@ const ChatInput = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (isComposing) return;
 
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && textareaRef.current?.value.trim()) {
       e.preventDefault(); // 阻止默认的换行行为
-      textareaRef.current?.value.trim() && formRef.current?.requestSubmit(); // 提交表单
+      formRef.current?.requestSubmit(); // 提交表单
     }
   };
 

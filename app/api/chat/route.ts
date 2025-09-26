@@ -1,8 +1,13 @@
 import { streamText, convertToModelMessages, createIdGenerator } from "ai";
 import { cookies } from "next/headers";
 import { getModelConfig } from "@/app/chat/lib/model";
-import { createChat, upsertMessage } from "@/app/chat/lib/db/actions";
+import {
+  createChat,
+  deleteChat,
+  upsertMessage,
+} from "@/app/chat/lib/db/actions";
 import { MyUIMessage } from "@/app/chat/lib/message-type";
+import { NextRequest, NextResponse } from "next/server";
 
 export const maxDuration = 30;
 
@@ -38,10 +43,6 @@ export async function POST(req: Request) {
       temperature: modelConfig.temperature,
       system: modelConfig.system,
       stopWhen: modelConfig.stopWhen,
-      // experimental_transform: smoothStream({
-      //   delayInMs: 10,
-      //   chunking: "word",
-      // }),
     });
 
     return result.toUIMessageStreamResponse({
@@ -67,5 +68,25 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Chat API error:", error);
     return new Response("Internal Server Error", { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const id = req.nextUrl.searchParams.get("id");
+    if (!id) {
+      return NextResponse.json(
+        { error: "参数有误: chatId不能为空" },
+        { status: 401 }
+      );
+    }
+    await deleteChat(id);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("delete chat error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

@@ -15,13 +15,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ChatHistorySection } from "./sidebar/chat-history-section";
 import { ChatHistorySkeleton } from "./sidebar/chat-history-skeleton";
-// import { IconLogo } from "@/components/ui/icons";
 
 export default function AppSidebar() {
   return (
@@ -31,10 +29,7 @@ export default function AppSidebar() {
           href="/chat"
           className="justify-betwee flex items-center gap-2 px-2 py-3"
         >
-          {/* <div> */}
-          {/* <IconLogo className={cn("size-5")} /> */}
           <span className="text-sm font-semibold">Chat Box</span>
-          {/* </div> */}
         </Link>
         <Tooltip>
           <TooltipTrigger asChild>

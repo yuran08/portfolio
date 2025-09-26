@@ -19,10 +19,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarGroupAction } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-// import { clearChats } from "@/lib/actions/chat";
+import { clearChats } from "@/app/chat/lib/db/actions";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
-// import { toast } from "sonner";
+import { toast } from "sonner";
+import { useRouter, usePathname } from "next/navigation";
 
 interface ClearHistoryActionProps {
   empty: boolean;
@@ -31,17 +32,25 @@ interface ClearHistoryActionProps {
 export function ClearHistoryAction({ empty }: ClearHistoryActionProps) {
   const [isPending, start] = useTransition();
   const [open, setOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const onClear = () =>
     start(async () => {
-      // const res = await clearChats();
-      // res?.error ? toast.error(res.error) : toast.success("History cleared");
-      // setOpen(false);
-      // window.dispatchEvent(new CustomEvent("chat-history-updated"));
+      const res = await clearChats();
+      res.error ? toast.error(res.error) : toast.success("操作成功");
+      setOpen(false);
+      setDropdownOpen(false); // 关闭下拉菜单
+      window.dispatchEvent(new CustomEvent("chat-history-updated"));
+
+      if (pathname && pathname.startsWith("/chat/") && pathname !== "/chat") {
+        router.push("/chat");
+      }
     });
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <SidebarGroupAction disabled={empty} className="static size-7 p-1">
           <MoreHorizontal size={16} />

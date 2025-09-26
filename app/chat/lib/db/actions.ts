@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, sql } from "drizzle-orm";
 import { db } from "../db";
 import { chats, messages, MyDBUIMessagePartSelect, parts } from "./schema";
 import { MyUIMessage } from "../message-type";
@@ -69,8 +69,18 @@ export const loadChat = async (chatId: string): Promise<MyUIMessage[]> => {
   }));
 };
 
-export const getChats = async () => {
-  return await db.select().from(chats).limit(20);
+export const getChats = async (limit: number = 20, offset: number = 0) => {
+  return await db
+    .select()
+    .from(chats)
+    .orderBy(chats.createdAt)
+    .limit(limit)
+    .offset(offset);
+};
+
+export const getTotalChatsCount = async () => {
+  const result = await db.select({ count: sql<number>`count(*)` }).from(chats);
+  return result[0]?.count || 0;
 };
 
 export const deleteChat = async (chatId: string) => {
@@ -100,4 +110,15 @@ export const deleteMessage = async (messageId: string) => {
     // Delete the target message (cascade delete will handle parts)
     await tx.delete(messages).where(eq(messages.id, messageId));
   });
+};
+
+export const clearChats = async () => {
+  try {
+    // 由于外键约束，删除 chats 会自动级联删除关联的 messages 和 parts
+    await db.delete(chats);
+    return { success: true };
+  } catch (error) {
+    console.error("Error clearing chats:", error);
+    return { error: "Failed to clear chat history" };
+  }
 };

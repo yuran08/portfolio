@@ -25,9 +25,9 @@ import {
 import { Chat } from "@/lib/types";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 
 interface ChatMenuItemProps {
@@ -41,10 +41,9 @@ const formatDateWithTime = (date: Date | string) => {
   yesterday.setDate(yesterday.getDate() - 1);
 
   const formatTime = (date: Date) => {
-    return date.toLocaleString("en-US", {
+    return date.toLocaleString("zh-CN", {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true,
     });
   };
 
@@ -53,15 +52,15 @@ const formatDateWithTime = (date: Date | string) => {
     parsedDate.getMonth() === now.getMonth() &&
     parsedDate.getFullYear() === now.getFullYear()
   ) {
-    return `Today, ${formatTime(parsedDate)}`;
+    return `今天, ${formatTime(parsedDate)}`;
   } else if (
     parsedDate.getDate() === yesterday.getDate() &&
     parsedDate.getMonth() === yesterday.getMonth() &&
     parsedDate.getFullYear() === yesterday.getFullYear()
   ) {
-    return `Yesterday, ${formatTime(parsedDate)}`;
+    return `昨天, ${formatTime(parsedDate)}`;
   } else {
-    return parsedDate.toLocaleString("en-US", {
+    return parsedDate.toLocaleString("zh-CN", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -75,34 +74,36 @@ const formatDateWithTime = (date: Date | string) => {
 export function ChatMenuItem({ chat }: ChatMenuItemProps) {
   const pathname = usePathname();
   const isActive = pathname.includes(chat.id);
-  // const router = useRouter();
-  const [isPending] = useTransition();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const onDelete = () => {
-    // startTransition(async () => {
-    //   try {
-    //     const res = await fetch(`/api/chat/${chat.id}`, { method: "DELETE" });
-    //     if (!res.ok) {
-    //       const errorData = await res.json();
-    //       throw new Error(errorData.error || "Failed to delete chat");
-    //     }
-    //     toast.success("Chat deleted");
-    //     setIsMenuOpen(false); // Close menu on success
-    //     setDialogOpen(false); // Close dialog on success
-    //     // If deleting the currently active chat, navigate home
-    //     if (isActive) {
-    //       router.push("/");
-    //     }
-    //     window.dispatchEvent(new CustomEvent("chat-history-updated"));
-    //   } catch (error) {
-    //     console.error("Failed to delete chat:", error);
-    //     toast.error((error as Error).message || "Failed to delete chat");
-    //     setIsMenuOpen(false); // Close menu on error
-    //     setDialogOpen(false); // Close dialog on error
-    //   }
-    // });
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/chat?id=${chat.id}`, {
+          method: "DELETE",
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "删除失败");
+        }
+        toast.success("删除成功");
+        setIsMenuOpen(false);
+        setDialogOpen(false);
+        if (isActive) {
+          router.push("/chat");
+        }
+        window.dispatchEvent(new CustomEvent("chat-history-updated"));
+      } catch (error) {
+        console.error("Failed to delete chat:", error);
+        toast.error((error as Error).message || "删除失败");
+        setIsMenuOpen(false);
+        setDialogOpen(false);
+      }
+    });
   };
 
   return (
@@ -143,7 +144,6 @@ export function ChatMenuItem({ chat }: ChatMenuItemProps) {
                 className="gap-2 text-destructive focus:text-destructive"
                 onSelect={(e) => {
                   e.preventDefault();
-                  // Don't call onDelete directly, just open the dialog
                 }}
               >
                 <Trash2 size={14} className="text-destructive" />
@@ -161,7 +161,7 @@ export function ChatMenuItem({ chat }: ChatMenuItemProps) {
                 <AlertDialogCancel disabled={isPending}>取消</AlertDialogCancel>
                 <AlertDialogAction
                   disabled={isPending}
-                  onClick={onDelete} // Call onDelete here
+                  onClick={onDelete}
                   className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
                 >
                   {isPending ? (

@@ -78,13 +78,13 @@ export function ChatMessages({
                             type="tool-web_search"
                             state={part.state}
                           />
-                          {/* <ToolContent>
+                          <ToolContent>
                             <ToolInput input={part.input} />
                             <ToolOutput
                               output={part.output}
                               errorText={part.errorText}
                             />
-                          </ToolContent> */}
+                          </ToolContent>
                         </Tool>
                       );
                     default:
@@ -97,13 +97,15 @@ export function ChatMessages({
               (messageIndex != messages.length - 1 ||
                 (messageIndex == messages.length - 1 && status == "ready")) && (
                 <Actions>
-                  {/* <Action
-                    onClick={() => regenerate({ messageId: message.id })}
-                    tooltip="重新生成"
-                    label="Retry"
-                  >
-                    <RefreshCcwIcon className="size-4" />
-                  </Action> */}
+                  {true ? null : (
+                    <Action
+                      onClick={() => regenerate({ messageId: message.id })}
+                      tooltip="重新生成"
+                      label="Retry"
+                    >
+                      <RefreshCcwIcon className="size-4" />
+                    </Action>
+                  )}
                   <Action
                     onClick={() => navigator.clipboard.writeText("")}
                     tooltip="复制"

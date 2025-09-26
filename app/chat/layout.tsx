@@ -5,6 +5,7 @@ import AppSidebar from "./components/app-sidebar";
 import AppHeader from "./components/app-header";
 
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "𝓎𝓇 𝒸𝒽𝒶𝓉",
@@ -31,6 +32,7 @@ export default async function ChatPageLayout({ children }: ChatLayoutProps) {
             {children}
           </main>
         </SidebarProvider>
+        <Toaster position="top-center" />
       </div>
     </ThemeProvider>
   );

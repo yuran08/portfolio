@@ -12,15 +12,12 @@ import { ChatHistorySkeleton } from "./chat-history-skeleton";
 import { ChatMenuItem } from "./chat-menu-item";
 import { ClearHistoryAction } from "./clear-history-action";
 
-// interface ChatHistoryClientProps {} // Removed empty interface
-
 interface ChatPageResponse {
   chats: Chat[];
   nextOffset: number | null;
 }
 
 export function ChatHistoryClient() {
-  // Removed props from function signature
   const [chats, setChats] = useState<Chat[]>([]);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,14 +28,13 @@ export function ChatHistoryClient() {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/chats`);
-      console.log("get chats history response:", response);
       if (!response.ok) {
         throw new Error("Failed to fetch initial chat history");
       }
       const { chats: newChats, nextOffset: newNextOffset } =
         (await response.json()) as ChatPageResponse;
       setChats(newChats);
-      // setNextOffset(newNextOffset);
+      setNextOffset(newNextOffset);
     } catch (error) {
       console.error("Failed to load initial chats:", error);
       toast.error("Failed to load chat history.");
@@ -65,24 +61,24 @@ export function ChatHistoryClient() {
   }, [fetchInitialChats]);
 
   const fetchMoreChats = useCallback(async () => {
-    // if (isLoading || nextOffset === null) return;
-    // setIsLoading(true);
-    // try {
-    //   const response = await fetch(`/api/chats?offset=${nextOffset}&limit=20`);
-    //   if (!response.ok) {
-    //     throw new Error("Failed to fetch more chat history");
-    //   }
-    //   const { chats: newChats, nextOffset: newNextOffset } =
-    //     (await response.json()) as ChatPageResponse;
-    //   setChats((prevChats) => [...prevChats, ...newChats]);
-    //   setNextOffset(newNextOffset);
-    // } catch (error) {
-    //   console.error("Failed to load more chats:", error);
-    //   toast.error("Failed to load more chat history.");
-    //   setNextOffset(null);
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    if (isLoading || nextOffset === null) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/chats?offset=${nextOffset}&limit=20`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch more chat history");
+      }
+      const { chats: newChats, nextOffset: newNextOffset } =
+        (await response.json()) as ChatPageResponse;
+      setChats((prevChats) => [...prevChats, ...newChats]);
+      setNextOffset(newNextOffset);
+    } catch (error) {
+      console.error("Failed to load more chats:", error);
+      toast.error("Failed to load more chat history.");
+      setNextOffset(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, [nextOffset, isLoading]);
 
   useEffect(() => {
