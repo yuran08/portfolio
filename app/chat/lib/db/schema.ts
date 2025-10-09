@@ -101,14 +101,11 @@ export const parts = pgTable(
       })()
     ),
     data_webSearch_result: jsonb()
-      .$type<MyDataPart["webSearch"]["result"][0]>()
-      .array(),
+      .$type<MyDataPart["webSearch"]["result"]>(),
     data_webSearch_images: jsonb()
-      .$type<MyDataPart["webSearch"]["images"][0]>()
-      .array(),
-    data_webSearch_answer: jsonb()
-      .$type<MyDataPart["webSearch"]["answer"][0]>()
-      .array(),
+      .$type<MyDataPart["webSearch"]["images"]>(),
+    data_webSearch_answer:
+      jsonb().$type<MyDataPart["webSearch"]["answer"]>(),
 
     providerMetadata: jsonb().$type<MyProviderMetadata>(),
   },
