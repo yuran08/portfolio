@@ -9,7 +9,7 @@ export function ChatHistorySkeleton() {
     <SidebarMenu>
       {Array.from({ length: 5 }).map((_, idx) => (
         <SidebarMenuItem key={idx}>
-          <SidebarMenuSkeleton showIcon={false} />
+          <SidebarMenuSkeleton showIcon={false} index={idx} />
         </SidebarMenuItem>
       ))}
     </SidebarMenu>

@@ -2,9 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  reactCompiler: true,
   experimental: {
-    reactCompiler: true,
     viewTransition: true,
+  },
+  turbopack: {
+    root: __dirname,
   },
   reactStrictMode: false,
 };

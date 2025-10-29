@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { unstable_ViewTransition as ViewTransition } from "react";
+import React, { ViewTransition } from "react";
 import { links } from "./config";
 import { useSelectPage } from "./use-select-page";
 

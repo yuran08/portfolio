@@ -4,7 +4,9 @@
       "mcp__context7__resolve-library-id",
       "WebSearch",
       "mcp__context7__get-library-docs",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "mcp__next-devtools__nextjs_runtime",
+      "mcp__next-devtools__browser_eval"
     ],
     "deny": [],
     "ask": []
